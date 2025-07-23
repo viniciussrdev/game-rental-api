@@ -6,6 +6,7 @@ import dev.viniciussr.gamerental.exception.rental.*;
 import dev.viniciussr.gamerental.exception.user.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -96,9 +97,21 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, message);
     }
 
-    // Handler para erros de formatação no JSON
-    // Se erro for causado por enum inválido, retorna status 400 + lista de valores aceitos
-    // Se não for enum, retorna erro genérico de formatação (400)
+    // Handler para erros de leitura da requisição (JSON inválido, mal formatado, etc)
+    // Se a causa for InvalidFormatException, direciona para 'handlerInvalidFormat'
+    // Caso contrário, retorna erro genérico de formatação (400)
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleMessageNotReadable(HttpMessageNotReadableException ex) {
+        Throwable cause = ex.getCause();
+        if (cause instanceof InvalidFormatException invalidFormat) {
+            return handleInvalidFormat(invalidFormat);
+        }
+        return buildResponse(HttpStatus.BAD_REQUEST, "Erro ao ler o corpo da requisição");
+    }
+
+    // Handler para erros de formatação no JSON (foco em tratamento de enums)
+    // Se a causa for enum inválido, retorna status 400 + lista de valores aceitos
+    // Caso contrário, retorna erro genérico de formatação (400)
     @ExceptionHandler(InvalidFormatException.class)
     public ResponseEntity<ErrorResponse> handleInvalidFormat(InvalidFormatException ex) {
         if (ex.getTargetType().isEnum()) {
@@ -112,7 +125,7 @@ public class GlobalExceptionHandler {
         }
 
         // Erro genérico
-        String message = "Formato inválido no corpo da requisição.";
+        String message = "Formato inválido no corpo da requisição";
         return buildResponse(HttpStatus.BAD_REQUEST, message);
     }
 }
