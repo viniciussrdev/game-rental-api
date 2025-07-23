@@ -18,7 +18,6 @@ public record UserDto(
         @NotNull(message = "Plano de assinatura é campo obrigatório")
         SubscriptionPlans plan,
 
-        @NotNull(message = "Quantidade de aluguéis ativos é campo obrigatório")
         @Min(value = 0, message = "Quantidade mínima de aluguéis ativos: 0 (zero)")
         Integer activeRentals
 ) {
