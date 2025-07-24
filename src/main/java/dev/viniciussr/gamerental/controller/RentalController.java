@@ -47,6 +47,13 @@ public class RentalController {
         return ResponseEntity.noContent().build();
     }
 
+    // Endpoint para renovar aluguel por 7 dias
+    @PutMapping("/renew-rental/{id}")
+    public ResponseEntity<Void> renewRental(@PathVariable Long id) {
+        rentalService.renewRental(id);
+        return ResponseEntity.noContent().build();
+    }
+
     // Endpoint para buscar aluguel por ID
     @GetMapping("/{id}")
     public ResponseEntity<RentalDto> findRentalById(@PathVariable Long id) {

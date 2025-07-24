@@ -219,19 +219,6 @@ public class RentalService {
 
     // --------------- MÉTODOS UTILITÁRIOS ---------------
 
-    // Renova um aluguel por mais 7 dias (válido apenas se ainda ativo)
-    public void renewRental(Long id) {
-
-        Rental renewedRental = rentalRepository.findById(id)
-                .orElseThrow(() -> new RentalNotFoundException("Aluguel não encontrado no id: " + id));
-
-        if (renewedRental.getStatus() != RentalStatus.ACTIVE) {
-            throw new BusinessException("Somente aluguéis ativos podem ser renovados.");
-        }
-
-        renewedRental.setReturnDate(renewedRental.getReturnDate().plusDays(7));
-        rentalRepository.save(renewedRental);
-    }
 
     // Devolve um aluguel
     public void returnRental(Long id) {
@@ -250,6 +237,20 @@ public class RentalService {
         userService.updateUserActiveRentalsCount(returnedRental.getUser(), -1);
 
         rentalRepository.save(returnedRental);
+    }
+
+    // Renova um aluguel por mais 7 dias
+    public void renewRental(Long id) {
+
+        Rental renewedRental = rentalRepository.findById(id)
+                .orElseThrow(() -> new RentalNotFoundException("Aluguel não encontrado no id: " + id));
+
+        if (renewedRental.getStatus() != RentalStatus.ACTIVE) {
+            throw new BusinessException("Somente aluguéis ativos podem ser renovados.");
+        }
+
+        renewedRental.setReturnDate(renewedRental.getReturnDate().plusDays(7));
+        rentalRepository.save(renewedRental);
     }
 
     // Atualiza status de aluguel para atrasado (LATE)
