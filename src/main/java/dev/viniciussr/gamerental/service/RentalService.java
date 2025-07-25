@@ -58,7 +58,7 @@ public class RentalService {
                 game,
                 user,
                 today,
-                today.plusDays(15), // Duração inicial de um aluguel: 15 dias
+                today.plusDays(15), // Duração padrão de um aluguel: 15 dias
                 RentalStatus.ACTIVE
         );
 

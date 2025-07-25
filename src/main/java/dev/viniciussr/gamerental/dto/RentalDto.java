@@ -16,15 +16,12 @@ public record RentalDto(
         @NotNull(message = "ID do usuário é campo obrigatório")
         Long userId,
 
-        @NotNull(message = "Data do aluguel é campo obrigatório")
         @PastOrPresent(message = "A data do aluguel deve ser hoje ou uma data passada")
         LocalDate rentalDate,
 
-        @NotNull(message = "Data de devolução é campo obrigatório")
         @FutureOrPresent(message = "A data de devolução deve ser hoje ou uma data futura")
         LocalDate returnDate,
 
-        @NotNull(message = "Status do aluguel é campo obrigatório")
         RentalStatus status
 ) {
     public RentalDto(Rental rental) {
