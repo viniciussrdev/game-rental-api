@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -86,13 +87,24 @@ public class GlobalExceptionHandler {
     }
 
     // Handler para validação de argumentos recebidos (bean validation)
-    // Retorna status 400
+    // Retorna status 400 com os campos inválidos
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors()
                 .stream()
                 .map(error -> "[" + error.getField() + "] : " + error.getDefaultMessage())
                 .collect(Collectors.joining("; "));
+
+        return buildResponse(HttpStatus.BAD_REQUEST, message);
+    }
+
+    // Handler para erros de tipo nos parâmetros da URL ou query (ex: String em campo Long)
+    // Retorna status 400 com mensagem informando o tipo esperado para o parâmetro
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String paramName = ex.getName();
+        String expectedType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "o tipo correto";
+        String message = "O parâmetro " + paramName + " é inválido. Esperado: " + expectedType;
 
         return buildResponse(HttpStatus.BAD_REQUEST, message);
     }
