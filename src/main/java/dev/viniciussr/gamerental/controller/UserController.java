@@ -1,6 +1,7 @@
 package dev.viniciussr.gamerental.controller;
 
 import dev.viniciussr.gamerental.dto.UserDto;
+import dev.viniciussr.gamerental.dto.UserUpdateDto;
 import dev.viniciussr.gamerental.enums.SubscriptionPlans;
 import dev.viniciussr.gamerental.service.UserService;
 import jakarta.validation.Valid;
@@ -27,8 +28,8 @@ public class UserController {
     }
 
     // Endpoint para atualizar usuário existente
-    @PutMapping("/{id}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @Valid @RequestBody UserDto dto) {
+    @PatchMapping("/{id}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateDto dto) {
         return ResponseEntity.ok(userService.updateUser(id, dto));
     }
 

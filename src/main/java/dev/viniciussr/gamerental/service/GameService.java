@@ -1,6 +1,7 @@
 package dev.viniciussr.gamerental.service;
 
 import dev.viniciussr.gamerental.dto.GameDto;
+import dev.viniciussr.gamerental.dto.GameUpdateDto;
 import dev.viniciussr.gamerental.enums.GameGenres;
 import dev.viniciussr.gamerental.exception.game.*;
 import dev.viniciussr.gamerental.model.Game;
@@ -34,27 +35,26 @@ public class GameService {
     }
 
     // Atualiza um jogo existente
-    public GameDto updateGame(Long id, GameDto dto) {
+    public GameDto updateGame(Long id, GameUpdateDto dto) {
 
-        Game updatedGame = gameRepository.findById(id)
+        Game game = gameRepository.findById(id)
                 .orElseThrow(() -> new GameNotFoundException("Jogo não encontrado no id: " + id));
 
-        updatedGame.setTitle(dto.title());
-        updatedGame.setGenre(dto.genre());
-        updatedGame.setPlatform(dto.platform());
-        updatedGame.setQuantity(dto.quantity());
-        updatedGame.setAvailable(dto.available());
+        if (dto.title()    != null) game.setTitle(dto.title());
+        if (dto.genre()    != null) game.setGenre(dto.genre());
+        if (dto.platform() != null) game.setPlatform(dto.platform());
+        if (dto.quantity() != null) game.setQuantity(dto.quantity());
 
-        return new GameDto(gameRepository.save(updatedGame));
+        return new GameDto(gameRepository.save(game));
     }
 
     // Remove um jogo existente
     public void deleteGame(Long id) {
 
-        Game deletedGame = gameRepository.findById(id)
+        Game game = gameRepository.findById(id)
                 .orElseThrow(() -> new GameNotFoundException("Jogo não encontrado no id: " + id));
 
-        gameRepository.delete(deletedGame);
+        gameRepository.delete(game);
     }
 
     // --------------- FILTROS ---------------

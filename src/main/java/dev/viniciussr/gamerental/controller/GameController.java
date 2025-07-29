@@ -1,6 +1,7 @@
 package dev.viniciussr.gamerental.controller;
 
 import dev.viniciussr.gamerental.dto.GameDto;
+import dev.viniciussr.gamerental.dto.GameUpdateDto;
 import dev.viniciussr.gamerental.enums.GameGenres;
 import dev.viniciussr.gamerental.service.GameService;
 import jakarta.validation.Valid;
@@ -27,8 +28,8 @@ public class GameController {
     }
 
     // Endpoint para atualizar jogo existente
-    @PutMapping("/{id}")
-    public ResponseEntity<GameDto> updateGame(@PathVariable Long id, @Valid @RequestBody GameDto dto) {
+    @PatchMapping("/{id}")
+    public ResponseEntity<GameDto> updateGame(@PathVariable Long id, @Valid @RequestBody GameUpdateDto dto) {
         return ResponseEntity.ok(gameService.updateGame(id, dto));
     }
 

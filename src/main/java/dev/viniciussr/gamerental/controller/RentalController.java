@@ -1,6 +1,7 @@
 package dev.viniciussr.gamerental.controller;
 
 import dev.viniciussr.gamerental.dto.RentalDto;
+import dev.viniciussr.gamerental.dto.RentalUpdateDto;
 import dev.viniciussr.gamerental.enums.RentalStatus;
 import dev.viniciussr.gamerental.service.RentalService;
 import jakarta.validation.Valid;
@@ -28,8 +29,8 @@ public class RentalController {
     }
 
     // Endpoint para atualizar alguel existente
-    @PutMapping("/{id}")
-    public ResponseEntity<RentalDto> updateRental(@PathVariable Long id, @Valid @RequestBody RentalDto dto) {
+    @PatchMapping("/{id}")
+    public ResponseEntity<RentalDto> updateRental(@PathVariable Long id, @Valid @RequestBody RentalUpdateDto dto) {
         return ResponseEntity.ok(rentalService.updateRental(id, dto));
     }
 

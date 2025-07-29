@@ -1,6 +1,7 @@
 package dev.viniciussr.gamerental.service;
 
 import dev.viniciussr.gamerental.dto.UserDto;
+import dev.viniciussr.gamerental.dto.UserUpdateDto;
 import dev.viniciussr.gamerental.enums.SubscriptionPlans;
 import dev.viniciussr.gamerental.exception.rental.*;
 import dev.viniciussr.gamerental.exception.user.*;
@@ -24,36 +25,35 @@ public class UserService {
     // Cria um novo usuário
     public UserDto createUser(UserDto dto) {
 
-        User savedUser = new User(
+        User user = new User(
                 dto.name(),
                 dto.email(),
                 dto.plan(),
                 0
         );
-        return new UserDto(userRepository.save(savedUser));
+        return new UserDto(userRepository.save(user));
     }
 
     // Atualiza um usuário existente
-    public UserDto updateUser(Long id, UserDto dto) {
+    public UserDto updateUser(Long id, UserUpdateDto dto) {
 
-        User updatedUser = userRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado no id: " + id));
 
-        updatedUser.setName(dto.name());
-        updatedUser.setEmail(dto.email());
-        updatedUser.setPlan(dto.plan());
-        updatedUser.setActiveRentals(dto.activeRentals());
+        if (dto.name()  != null) user.setName(dto.name());
+        if (dto.email() != null) user.setEmail(dto.email());
+        if (dto.plan()  != null) user.setPlan(dto.plan());
 
-        return new UserDto(userRepository.save(updatedUser));
+        return new UserDto(userRepository.save(user));
     }
 
     // Remove um usuário existente
     public void deleteUser(Long id) {
 
-        User deletedUser = userRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado no id: " + id));
 
-        userRepository.delete(deletedUser);
+        userRepository.delete(user);
     }
 
     // --------------- FILTROS ---------------

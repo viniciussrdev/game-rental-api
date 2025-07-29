@@ -1,6 +1,7 @@
 package dev.viniciussr.gamerental.service;
 
 import dev.viniciussr.gamerental.dto.RentalDto;
+import dev.viniciussr.gamerental.dto.RentalUpdateDto;
 import dev.viniciussr.gamerental.enums.RentalStatus;
 import dev.viniciussr.gamerental.exception.BusinessException;
 import dev.viniciussr.gamerental.exception.game.*;
@@ -54,7 +55,7 @@ public class RentalService {
 
         LocalDate today = LocalDate.now();
 
-        Rental savedRental = new Rental(
+        Rental rental = new Rental(
                 game,
                 user,
                 today,
@@ -65,32 +66,38 @@ public class RentalService {
         gameService.updateGameQuantityAndAvailability(game, -1);
         userService.updateUserActiveRentalsCount(user, 1);
 
-        return new RentalDto(rentalRepository.save(savedRental));
+        return new RentalDto(rentalRepository.save(rental));
     }
 
     // Atualiza um aluguel existente
-    public RentalDto updateRental(Long id, RentalDto dto) {
+    public RentalDto updateRental(Long id, RentalUpdateDto dto) {
 
-        Rental updatedRental = rentalRepository.findById(id)
+        Rental rental = rentalRepository.findById(id)
                 .orElseThrow(() -> new RentalNotFoundException("Aluguel não encontrado no id: " + id));
 
-        Game game = gameRepository.findById(dto.gameId())
-                .orElseThrow(() -> new GameNotFoundException("Jogo não encontrado no id: " + dto.gameId()));
-
-        User user = userRepository.findById(dto.userId())
-                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado no id: " + dto.userId()));
-
-        if (updatedRental.getStatus() == RentalStatus.RETURNED) {
+        if (rental.getStatus() == RentalStatus.RETURNED) {
             throw new RentalAlreadyReturnedException("Não é possível alterar um aluguel já devolvido.");
         }
 
-        updatedRental.setGame(game);
-        updatedRental.setUser(user);
-        updatedRental.setRentalDate(dto.rentalDate());
-        updatedRental.setReturnDate(dto.returnDate());
-        updatedRental.setStatus(dto.status());
+        if (dto.gameId() != null) {
+            Game game = gameRepository.findById(dto.gameId())
+                    .orElseThrow(() -> new GameNotFoundException("Jogo não encontrado no id: " + dto.gameId()));
 
-        return new RentalDto(rentalRepository.save(updatedRental));
+            rental.setGame(game);
+        }
+
+        if (dto.userId() != null) {
+            User user = userRepository.findById(dto.userId())
+                    .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado no id: " + dto.userId()));
+
+            rental.setUser(user);
+        }
+
+        if (dto.status() != null) {
+            rental.setStatus(dto.status());
+        }
+
+        return new RentalDto(rentalRepository.save(rental));
     }
 
     // Deleta um aluguel existente
