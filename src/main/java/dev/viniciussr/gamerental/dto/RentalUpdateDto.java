@@ -11,11 +11,4 @@ public record RentalUpdateDto(
 
         RentalStatus status
 ) {
-    public RentalUpdateDto(Rental rental) {
-        this(
-                rental.getGame().getIdGame(),
-                rental.getUser().getIdUser(),
-                rental.getStatus()
-        );
-    }
 }

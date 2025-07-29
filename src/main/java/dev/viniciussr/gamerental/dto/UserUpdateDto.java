@@ -13,11 +13,4 @@ public record UserUpdateDto(
 
         SubscriptionPlans plan
 ) {
-    public UserUpdateDto(User user) {
-        this(
-                user.getName(),
-                user.getEmail(),
-                user.getPlan()
-        );
-    }
 }

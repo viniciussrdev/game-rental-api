@@ -20,12 +20,4 @@ public record GameUpdateDto(
         @Max(value = 100, message = "Quantidade máxima: 100 (cem)")
         Integer quantity
 ) {
-    public GameUpdateDto(Game game) {
-        this(
-                game.getTitle(),
-                game.getGenre(),
-                game.getPlatform(),
-                game.getQuantity()
-        );
-    }
 }
