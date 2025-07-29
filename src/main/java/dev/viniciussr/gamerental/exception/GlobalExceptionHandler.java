@@ -118,7 +118,7 @@ public class GlobalExceptionHandler {
         if (cause instanceof InvalidFormatException invalidFormat) {
             return handleInvalidFormat(invalidFormat);
         }
-        return buildResponse(HttpStatus.BAD_REQUEST, "Erro ao ler o corpo da requisição");
+        return buildResponse(HttpStatus.BAD_REQUEST, "Erro de leitura dos dados enviados na requisição");
     }
 
     // Handler para erros de formatação no JSON (foco em tratamento de enums)
