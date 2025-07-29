@@ -2,7 +2,10 @@ package dev.viniciussr.gamerental.model;
 
 import dev.viniciussr.gamerental.enums.RentalStatus;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 

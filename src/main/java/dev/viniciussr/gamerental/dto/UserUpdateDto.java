@@ -1,7 +1,6 @@
 package dev.viniciussr.gamerental.dto;
 
 import dev.viniciussr.gamerental.enums.SubscriptionPlans;
-import dev.viniciussr.gamerental.model.User;
 import jakarta.validation.constraints.Email;
 
 public record UserUpdateDto(

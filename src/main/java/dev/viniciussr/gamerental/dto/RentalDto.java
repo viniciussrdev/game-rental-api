@@ -2,7 +2,9 @@ package dev.viniciussr.gamerental.dto;
 
 import dev.viniciussr.gamerental.enums.RentalStatus;
 import dev.viniciussr.gamerental.model.Rental;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 
 import java.time.LocalDate;
 

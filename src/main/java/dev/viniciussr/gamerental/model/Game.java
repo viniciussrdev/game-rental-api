@@ -3,7 +3,10 @@ package dev.viniciussr.gamerental.model;
 import dev.viniciussr.gamerental.enums.GameGenres;
 import dev.viniciussr.gamerental.enums.Platforms;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Set;
 

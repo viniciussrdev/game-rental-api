@@ -2,7 +2,6 @@ package dev.viniciussr.gamerental.dto;
 
 import dev.viniciussr.gamerental.enums.GameGenres;
 import dev.viniciussr.gamerental.enums.Platforms;
-import dev.viniciussr.gamerental.model.Game;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
