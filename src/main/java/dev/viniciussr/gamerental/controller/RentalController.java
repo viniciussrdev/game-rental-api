@@ -1,6 +1,5 @@
 package dev.viniciussr.gamerental.controller;
 
-import dev.viniciussr.gamerental.dto.RentalCancelDto;
 import dev.viniciussr.gamerental.dto.RentalDto;
 import dev.viniciussr.gamerental.dto.RentalUpdateDto;
 import dev.viniciussr.gamerental.enums.RentalStatus;
@@ -59,9 +58,9 @@ public class RentalController {
 
     // Endpoint para cancelar aluguel
     @PutMapping("/cancel/{id}")
-    public ResponseEntity<RentalCancelDto> cancelRental(@PathVariable Long id) {
+    public ResponseEntity<RentalDto> cancelRental(@PathVariable Long id) {
         Rental rental = rentalService.cancelRental(id);
-        return ResponseEntity.ok(new RentalCancelDto(rental));
+        return ResponseEntity.ok(new RentalDto(rental));
     }
 
     // Endpoint para buscar aluguel por ID

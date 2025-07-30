@@ -175,7 +175,7 @@ public class RentalService {
     // Lista aluguéis por data de devolução
     public List<RentalDto> listRentalsByReturnDate(LocalDate returnDate) {
 
-        List<RentalDto> rentals = rentalRepository.findByReturnDate(returnDate)
+        List<RentalDto> rentals = rentalRepository.findByEndDate(returnDate)
                 .stream()
                 .map(RentalDto::new)
                 .toList();
@@ -246,7 +246,7 @@ public class RentalService {
         Rental rental = getActiveRental(id);
 
         rental.setStatus(RentalStatus.RETURNED);
-        rental.setReturnDate(LocalDate.now());
+        rental.setEndDate(LocalDate.now());
 
         gameService.updateGameQuantityAndAvailability(rental.getGame(), 1);
         userService.updateUserActiveRentalsCount(rental.getUser(), -1);
@@ -258,7 +258,7 @@ public class RentalService {
     public void renewRental(Long id) {
 
         Rental rental = getActiveRental(id);
-        rental.setReturnDate(rental.getReturnDate().plusDays(7));
+        rental.setEndDate(rental.getEndDate().plusDays(7));
 
         rentalRepository.save(rental);
     }
@@ -269,7 +269,7 @@ public class RentalService {
         Rental rental = getActiveRental(id);
 
         rental.setStatus(RentalStatus.CANCELLED);
-        rental.setReturnDate(LocalDate.now());
+        rental.setEndDate(LocalDate.now());
 
         gameService.updateGameQuantityAndAvailability(rental.getGame(), 1);
         userService.updateUserActiveRentalsCount(rental.getUser(), -1);

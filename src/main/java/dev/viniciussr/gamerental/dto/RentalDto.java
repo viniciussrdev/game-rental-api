@@ -21,8 +21,8 @@ public record RentalDto(
         @PastOrPresent(message = "A data do aluguel deve ser hoje ou uma data passada")
         LocalDate rentalDate,
 
-        @FutureOrPresent(message = "A data de devolução deve ser hoje ou uma data futura")
-        LocalDate returnDate,
+        @FutureOrPresent(message = "A data de encerramento deve ser hoje ou uma data futura")
+        LocalDate endDate,
 
         RentalStatus status
 ) {
@@ -32,7 +32,7 @@ public record RentalDto(
                 rental.getGame().getIdGame(),
                 rental.getUser().getIdUser(),
                 rental.getRentalDate(),
-                rental.getReturnDate(),
+                rental.getEndDate(),
                 rental.getStatus()
         );
     }

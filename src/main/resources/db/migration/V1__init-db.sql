@@ -34,7 +34,7 @@ CREATE TABLE tb_rental (
     game_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
     rental_date DATE NOT NULL,
-    return_date DATE,
+    end_date DATE,
     status ENUM('ACTIVE', 'RETURNED', 'LATE', 'CANCELLED') NOT NULL,
     FOREIGN KEY (game_id) REFERENCES tb_game(id_game),
     FOREIGN KEY (user_id) REFERENCES tb_user(id_user)

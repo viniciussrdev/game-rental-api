@@ -15,7 +15,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
     List<Rental> findByRentalDate(LocalDate rentalDate);
 
-    List<Rental> findByReturnDate(LocalDate returnDate);
+    List<Rental> findByEndDate(LocalDate endDate);
 
     List<Rental> findByStatus(RentalStatus status);
 

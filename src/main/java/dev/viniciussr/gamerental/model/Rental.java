@@ -32,7 +32,7 @@ public class Rental {
 
     private LocalDate rentalDate; // Data do aluguel
 
-    private LocalDate returnDate; // Data de devolução do aluguel
+    private LocalDate endDate; // Data de devolução do aluguel
 
     @Enumerated(EnumType.STRING)
     private RentalStatus status; // Status do aluguel
@@ -41,13 +41,13 @@ public class Rental {
             Game game,
             User user,
             LocalDate rentalDate,
-            LocalDate returnDate,
+            LocalDate endDate,
             RentalStatus status
     ) {
         this.game = game;
         this.user = user;
         this.rentalDate = rentalDate;
-        this.returnDate = returnDate;
+        this.endDate = endDate;
         this.status = status;
     }
 }
