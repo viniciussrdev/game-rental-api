@@ -6,8 +6,6 @@ public record RentalUpdateDto(
 
         Long gameId,
 
-        Long userId,
-
-        RentalStatus status
+        Long userId
 ) {
 }

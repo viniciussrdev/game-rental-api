@@ -97,10 +97,6 @@ public class RentalService {
             rental.setUser(user);
         }
 
-        if (dto.status() != null) {
-            rental.setStatus(dto.status());
-        }
-
         return new RentalDto(rentalRepository.save(rental));
     }
 
