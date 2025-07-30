@@ -1,6 +1,6 @@
 package dev.viniciussr.gamerental.enums;
 
-// Enum: Gênero dos Jogos
+// Enum: Gênero dos jogos
 public enum GameGenres {
     ACTION,
     ADVENTURE,

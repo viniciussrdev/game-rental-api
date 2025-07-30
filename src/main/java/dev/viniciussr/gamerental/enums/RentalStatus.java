@@ -1,6 +1,6 @@
 package dev.viniciussr.gamerental.enums;
 
-// Enum: Status do Aluguel
+// Enum: Status do aluguel
 public enum RentalStatus {
     ACTIVE,
     RETURNED,
