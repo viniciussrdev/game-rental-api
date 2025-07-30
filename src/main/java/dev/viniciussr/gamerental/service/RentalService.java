@@ -280,7 +280,7 @@ public class RentalService {
     }
 
     // Atualiza status de aluguel para atrasado (LATE)
-    public void updateLateRentals() {
+    public void markRentalsLate() {
 
         List<Rental> activeRentals = rentalRepository.findByStatus(RentalStatus.ACTIVE);
 
@@ -296,6 +296,6 @@ public class RentalService {
     @Scheduled(cron = "0 0 0 * * *") // *** Verificação feita diariamente às 00h ***
     public void checkForLateRentals() {
 
-        updateLateRentals();
+        markRentalsLate();
     }
 }
