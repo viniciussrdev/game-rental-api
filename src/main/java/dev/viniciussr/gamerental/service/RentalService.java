@@ -3,9 +3,8 @@ package dev.viniciussr.gamerental.service;
 import dev.viniciussr.gamerental.dto.RentalDto;
 import dev.viniciussr.gamerental.dto.RentalUpdateDto;
 import dev.viniciussr.gamerental.enums.RentalStatus;
-import dev.viniciussr.gamerental.exception.BusinessException;
 import dev.viniciussr.gamerental.exception.game.GameNotFoundException;
-import dev.viniciussr.gamerental.exception.rental.RentalAlreadyReturnedException;
+import dev.viniciussr.gamerental.exception.rental.RentalAlreadyClosedException;
 import dev.viniciussr.gamerental.exception.rental.RentalNotFoundException;
 import dev.viniciussr.gamerental.exception.user.UserNotFoundException;
 import dev.viniciussr.gamerental.model.Game;
@@ -81,7 +80,7 @@ public class RentalService {
                 .orElseThrow(() -> new RentalNotFoundException("Aluguel não encontrado no id: " + id));
 
         if (rental.getStatus() == RentalStatus.RETURNED) {
-            throw new RentalAlreadyReturnedException("Não é possível alterar um aluguel já devolvido.");
+            throw new RentalAlreadyClosedException("Não é possível alterar um aluguel já devolvido.");
         }
 
         if (dto.gameId() != null) {
@@ -231,38 +230,57 @@ public class RentalService {
 
     // --------------- MÉTODOS UTILITÁRIOS ---------------
 
+    // Valida se o aluguel está ativo
+    // (Para utilização nos métodos: return, renew e cancel)
+    private Rental getActiveRental(Long id) {
+
+        Rental rental = rentalRepository.findById(id)
+                .orElseThrow(() -> new RentalNotFoundException("Aluguel não encontrado no id: " + id));
+
+        if (rental.getStatus() != RentalStatus.ACTIVE) {
+            throw new RentalAlreadyClosedException("Este aluguel já está encerrado. id: " + rental.getIdRental());
+        }
+
+        return rental;
+    }
 
     // Devolve um aluguel
     public void returnRental(Long id) {
 
-        Rental returnedRental = rentalRepository.findById(id)
-                .orElseThrow(() -> new RentalNotFoundException("Aluguel não encontrado no id: " + id));
+        Rental rental = getActiveRental(id);
 
-        if (returnedRental.getStatus() != RentalStatus.ACTIVE) {
-            throw new RentalAlreadyReturnedException("Este aluguel já está encerrado: " + returnedRental.getIdRental());
-        }
+        rental.setStatus(RentalStatus.RETURNED);
+        rental.setReturnDate(LocalDate.now());
 
-        returnedRental.setStatus(RentalStatus.RETURNED);
-        returnedRental.setReturnDate(LocalDate.now());
+        gameService.updateGameQuantityAndAvailability(rental.getGame(), 1);
+        userService.updateUserActiveRentalsCount(rental.getUser(), -1);
 
-        gameService.updateGameQuantityAndAvailability(returnedRental.getGame(), 1);
-        userService.updateUserActiveRentalsCount(returnedRental.getUser(), -1);
-
-        rentalRepository.save(returnedRental);
+        rentalRepository.save(rental);
     }
 
     // Renova um aluguel por mais 7 dias
     public void renewRental(Long id) {
 
-        Rental renewedRental = rentalRepository.findById(id)
-                .orElseThrow(() -> new RentalNotFoundException("Aluguel não encontrado no id: " + id));
+        Rental rental = getActiveRental(id);
+        rental.setReturnDate(rental.getReturnDate().plusDays(7));
 
-        if (renewedRental.getStatus() != RentalStatus.ACTIVE) {
-            throw new BusinessException("Somente aluguéis ativos podem ser renovados.");
-        }
+        rentalRepository.save(rental);
+    }
 
-        renewedRental.setReturnDate(renewedRental.getReturnDate().plusDays(7));
-        rentalRepository.save(renewedRental);
+    // Cancela um aluguel
+    public Rental cancelRental(Long id) {
+
+        Rental rental = getActiveRental(id);
+
+        rental.setStatus(RentalStatus.CANCELLED);
+        rental.setReturnDate(LocalDate.now());
+
+        gameService.updateGameQuantityAndAvailability(rental.getGame(), 1);
+        userService.updateUserActiveRentalsCount(rental.getUser(), -1);
+
+        rentalRepository.save(rental);
+
+        return rental;
     }
 
     // Atualiza status de aluguel para atrasado (LATE)

@@ -1,8 +1,10 @@
 package dev.viniciussr.gamerental.controller;
 
+import dev.viniciussr.gamerental.dto.RentalCancelDto;
 import dev.viniciussr.gamerental.dto.RentalDto;
 import dev.viniciussr.gamerental.dto.RentalUpdateDto;
 import dev.viniciussr.gamerental.enums.RentalStatus;
+import dev.viniciussr.gamerental.model.Rental;
 import dev.viniciussr.gamerental.service.RentalService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -53,6 +55,13 @@ public class RentalController {
     public ResponseEntity<Void> renewRental(@PathVariable Long id) {
         rentalService.renewRental(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Endpoint para cancelar aluguel
+    @PutMapping("/cancel/{id}")
+    public ResponseEntity<RentalCancelDto> cancelRental(@PathVariable Long id) {
+        Rental rental = rentalService.cancelRental(id);
+        return ResponseEntity.ok(new RentalCancelDto(rental));
     }
 
     // Endpoint para buscar aluguel por ID
