@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import dev.viniciussr.gamerental.exception.game.GameIsNotAvailableException;
 import dev.viniciussr.gamerental.exception.game.GameNotFoundException;
 import dev.viniciussr.gamerental.exception.rental.PlanLimitExceededException;
-import dev.viniciussr.gamerental.exception.rental.RentalAlreadyReturnedException;
+import dev.viniciussr.gamerental.exception.rental.RentalAlreadyClosedException;
 import dev.viniciussr.gamerental.exception.rental.RentalNotFoundException;
 import dev.viniciussr.gamerental.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -85,8 +85,8 @@ public class GlobalExceptionHandler {
 
     // Handler para tentativa de devolução de jogos já devolvidos (conflito de estado)
     // Retorna status 409
-    @ExceptionHandler(RentalAlreadyReturnedException.class)
-    public ResponseEntity<ErrorResponse> handleRentalAlreadyReturned(RentalAlreadyReturnedException ex) {
+    @ExceptionHandler(RentalAlreadyClosedException.class)
+    public ResponseEntity<ErrorResponse> handleRentalAlreadyReturned(RentalAlreadyClosedException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 
