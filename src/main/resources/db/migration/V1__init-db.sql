@@ -3,6 +3,8 @@ CREATE TABLE tb_user (
     id_user BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('ADMIN', 'USER') NOT NULL,
     plan ENUM('NOOB', 'PRO', 'LEGEND') NOT NULL,
     active_rentals INT NOT NULL DEFAULT 0
 );

@@ -1,6 +1,7 @@
 package dev.viniciussr.gamerental.controller;
 
 import dev.viniciussr.gamerental.dto.UserDto;
+import dev.viniciussr.gamerental.dto.UserRegisterDto;
 import dev.viniciussr.gamerental.dto.UserUpdateDto;
 import dev.viniciussr.gamerental.enums.SubscriptionPlans;
 import dev.viniciussr.gamerental.service.UserService;
@@ -23,7 +24,7 @@ public class UserController {
 
     // Endpoint para criar novo usuário
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto dto) {
+    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserRegisterDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(dto));
     }
 

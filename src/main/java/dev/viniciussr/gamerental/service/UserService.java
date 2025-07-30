@@ -1,8 +1,10 @@
 package dev.viniciussr.gamerental.service;
 
 import dev.viniciussr.gamerental.dto.UserDto;
+import dev.viniciussr.gamerental.dto.UserRegisterDto;
 import dev.viniciussr.gamerental.dto.UserUpdateDto;
 import dev.viniciussr.gamerental.enums.SubscriptionPlans;
+import dev.viniciussr.gamerental.enums.UserRole;
 import dev.viniciussr.gamerental.exception.rental.PlanLimitExceededException;
 import dev.viniciussr.gamerental.exception.user.UserNotFoundException;
 import dev.viniciussr.gamerental.model.User;
@@ -23,11 +25,13 @@ public class UserService {
     // -------------------- CRUD BÁSICO --------------------
 
     // Cria um novo usuário
-    public UserDto createUser(UserDto dto) {
+    public UserDto createUser(UserRegisterDto dto) {
 
         User user = new User(
                 dto.name(),
                 dto.email(),
+                dto.password(),
+                UserRole.USER,
                 dto.plan(),
                 0
         );
