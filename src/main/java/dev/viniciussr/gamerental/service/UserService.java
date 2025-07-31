@@ -111,6 +111,19 @@ public class UserService {
         return users;
     }
 
+    // Lista usuários por role
+    public List<UserDto> listUsersByRole(UserRole role) {
+
+        List<UserDto> users = userRepository.findByRole(role)
+                .stream()
+                .map(UserDto::new)
+                .toList();
+        if (users.isEmpty()) {
+            throw new UserNotFoundException("Nenhum Usuário encontrado com a Role: " + role.name());
+        }
+        return users;
+    }
+
     // Listar usuários por plano
     public List<UserDto> listUsersByPlan(SubscriptionPlans plan) {
 

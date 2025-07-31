@@ -4,6 +4,7 @@ import dev.viniciussr.gamerental.dto.UserDto;
 import dev.viniciussr.gamerental.dto.UserRegisterDto;
 import dev.viniciussr.gamerental.dto.UserUpdateDto;
 import dev.viniciussr.gamerental.enums.SubscriptionPlans;
+import dev.viniciussr.gamerental.enums.UserRole;
 import dev.viniciussr.gamerental.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -63,6 +64,12 @@ public class UserController {
     @GetMapping(params = "email")
     public ResponseEntity<List<UserDto>> listUsersByEmail(@RequestParam String email) {
         return ResponseEntity.ok(userService.listUsersByEmail(email));
+    }
+
+    // Endpoint para listar usuários por role
+    @GetMapping(params = "role")
+    public ResponseEntity<List<UserDto>> listUsersByRole(@RequestParam UserRole role) {
+        return ResponseEntity.ok(userService.listUsersByRole(role));
     }
 
     // Endpoint para listar usuários por plano
