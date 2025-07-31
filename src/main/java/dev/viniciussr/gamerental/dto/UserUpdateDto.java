@@ -7,6 +7,7 @@ public record UserUpdateDto(
         String name,
         String email,
         UserRole role,
+        String password,
         SubscriptionPlans plan
 ) {
 }

@@ -31,7 +31,8 @@ public class UserService {
                 dto.name(),
                 dto.email(),
                 dto.password(),
-                UserRole.USER,
+                dto.role(),
+                //UserRole.USER,
                 dto.plan(),
                 0
         );
@@ -44,9 +45,11 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado no id: " + id));
 
-        if (dto.name()  != null) user.setName(dto.name());
-        if (dto.email() != null) user.setEmail(dto.email());
-        if (dto.plan()  != null) user.setPlan(dto.plan());
+        if (dto.name()     != null) user.setName(dto.name());
+        if (dto.email()    != null) user.setEmail(dto.email());
+        if (dto.password() != null) user.setPassword(dto.password());
+        if (dto.role()     != null) user.setRole(dto.role());
+        if (dto.plan()     != null) user.setPlan(dto.plan());
 
         return new UserDto(userRepository.save(user));
     }
