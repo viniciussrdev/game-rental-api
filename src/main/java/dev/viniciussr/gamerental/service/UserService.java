@@ -9,6 +9,7 @@ import dev.viniciussr.gamerental.exception.rental.PlanLimitExceededException;
 import dev.viniciussr.gamerental.exception.user.UserNotFoundException;
 import dev.viniciussr.gamerental.model.User;
 import dev.viniciussr.gamerental.repository.UserRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,15 +28,19 @@ public class UserService {
     // Cria um novo usuário
     public UserDto createUser(UserRegisterDto dto) {
 
+        String encryptedPassword = new BCryptPasswordEncoder().encode(dto.password());
+
         User user = new User(
                 dto.name(),
                 dto.email(),
                 dto.password(),
-                dto.role(),
-                //UserRole.USER,
+                UserRole.USER,
                 dto.plan(),
                 0
         );
+        
+        user.setPassword(encryptedPassword);
+
         return new UserDto(userRepository.save(user));
     }
 

@@ -7,6 +7,7 @@ import dev.viniciussr.gamerental.exception.rental.PlanLimitExceededException;
 import dev.viniciussr.gamerental.exception.rental.RentalAlreadyClosedException;
 import dev.viniciussr.gamerental.exception.rental.RentalNotFoundException;
 import dev.viniciussr.gamerental.exception.user.UserNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -88,6 +89,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RentalAlreadyClosedException.class)
     public ResponseEntity<ErrorResponse> handleRentalAlreadyReturned(RentalAlreadyClosedException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    // Handler para tentativa de cadastro de usuário com dados já existentes (duplicados)
+    // Retorna status 409
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleUserAlreadyExists(DataIntegrityViolationException ex) {
+        String message = "Usuário já cadastrado";
+        return buildResponse(HttpStatus.CONFLICT, message);
     }
 
     // Handler para validação de argumentos recebidos (bean validation)
