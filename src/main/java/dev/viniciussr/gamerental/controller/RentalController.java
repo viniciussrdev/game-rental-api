@@ -25,13 +25,13 @@ public class RentalController {
 
     // Endpoint para criar novo aluguel
     @PostMapping
-    public ResponseEntity<RentalDto> createRental(@Valid @RequestBody RentalDto dto) {
+    public ResponseEntity<RentalDto> createRental(@RequestBody @Valid RentalDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(rentalService.createRental(dto));
     }
 
     // Endpoint para atualizar alguel existente
     @PatchMapping("/{id}")
-    public ResponseEntity<RentalDto> updateRental(@PathVariable Long id, @Valid @RequestBody RentalUpdateDto dto) {
+    public ResponseEntity<RentalDto> updateRental(@PathVariable Long id, @RequestBody @Valid RentalUpdateDto dto) {
         return ResponseEntity.ok(rentalService.updateRental(id, dto));
     }
 

@@ -23,13 +23,13 @@ public class GameController {
 
     // Endpoint para criar/adicionar novo jogo
     @PostMapping
-    public ResponseEntity<GameDto> createGame(@Valid @RequestBody GameDto dto) {
+    public ResponseEntity<GameDto> createGame(@RequestBody @Valid GameDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(gameService.createGame(dto));
     }
 
     // Endpoint para atualizar jogo existente
     @PatchMapping("/{id}")
-    public ResponseEntity<GameDto> updateGame(@PathVariable Long id, @Valid @RequestBody GameUpdateDto dto) {
+    public ResponseEntity<GameDto> updateGame(@PathVariable Long id, @RequestBody @Valid GameUpdateDto dto) {
         return ResponseEntity.ok(gameService.updateGame(id, dto));
     }
 

@@ -25,13 +25,13 @@ public class UserController {
 
     // Endpoint para criar novo usuário
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserRegisterDto dto) {
+    public ResponseEntity<UserDto> createUser(@RequestBody @Valid UserRegisterDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(dto));
     }
 
     // Endpoint para atualizar usuário existente
     @PatchMapping("/{id}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateDto dto) {
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody @Valid UserUpdateDto dto) {
         return ResponseEntity.ok(userService.updateUser(id, dto));
     }
 
