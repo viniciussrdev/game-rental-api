@@ -1,8 +1,11 @@
 package dev.viniciussr.gamerental.controller;
 
+import dev.viniciussr.gamerental.dto.TokenDto;
 import dev.viniciussr.gamerental.dto.UserDto;
 import dev.viniciussr.gamerental.dto.UserLoginDto;
 import dev.viniciussr.gamerental.dto.UserRegisterDto;
+import dev.viniciussr.gamerental.model.User;
+import dev.viniciussr.gamerental.service.JwtService;
 import dev.viniciussr.gamerental.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,10 +21,13 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
+    private final JwtService jwtService;
 
-    public AuthController(AuthenticationManager authenticationManager, UserService userService) {
+
+    public AuthController(AuthenticationManager authenticationManager, UserService userService, JwtService jwtService) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
+        this.jwtService = jwtService;
     }
 
     // Endpoint para cadastro de novo usuário
@@ -40,18 +46,9 @@ public class AuthController {
                         dto.password()
                 );
 
-        Authentication authentication = authenticationManager.authenticate(usernamePassword);
+        Authentication auth = authenticationManager.authenticate(usernamePassword);
+        String token = jwtService.generateToken((User) auth.getPrincipal());
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new TokenDto(token));
     }
-
-
-
-
-
-
-
-
-
-
 }
