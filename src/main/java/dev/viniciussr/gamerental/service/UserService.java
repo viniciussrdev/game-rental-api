@@ -9,13 +9,16 @@ import dev.viniciussr.gamerental.exception.rental.PlanLimitExceededException;
 import dev.viniciussr.gamerental.exception.user.UserNotFoundException;
 import dev.viniciussr.gamerental.model.User;
 import dev.viniciussr.gamerental.repository.UserRepository;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
@@ -23,7 +26,18 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    // -------------------- CRUD BÁSICO --------------------
+    // ********** USER DETAILS SERVICE **********
+
+    // Busca um usuário por username (email)
+    // Exigido pela interface UserDetailsService
+    // Permite que o Spring Security carregue os dados do usuário durante o processo de autenticação
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+    }
+
+    // *************** CRUD BÁSICO ***************
 
     // Cria um novo usuário
     public UserDto createUser(UserRegisterDto dto) {
@@ -38,7 +52,6 @@ public class UserService {
                 dto.plan(),
                 0
         );
-        
         user.setPassword(encryptedPassword);
 
         return new UserDto(userRepository.save(user));
