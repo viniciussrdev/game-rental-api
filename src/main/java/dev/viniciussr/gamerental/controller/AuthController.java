@@ -4,34 +4,26 @@ import dev.viniciussr.gamerental.dto.TokenDto;
 import dev.viniciussr.gamerental.dto.UserDto;
 import dev.viniciussr.gamerental.dto.UserLoginDto;
 import dev.viniciussr.gamerental.dto.UserRegisterDto;
-import dev.viniciussr.gamerental.model.User;
-import dev.viniciussr.gamerental.service.JwtService;
+import dev.viniciussr.gamerental.service.LoginService;
 import dev.viniciussr.gamerental.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
     private final UserService userService;
-    private final JwtService jwtService;
+    private final LoginService loginService;
 
-
-    public AuthController(
-            AuthenticationManager authenticationManager,
-            UserService userService,
-            JwtService jwtService)
-    {
-        this.authenticationManager = authenticationManager;
+    public AuthController(UserService userService, LoginService loginService) {
         this.userService = userService;
-        this.jwtService = jwtService;
+        this.loginService = loginService;
     }
 
     // Endpoint para cadastro de novo usuário
@@ -40,19 +32,10 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(dto));
     }
 
-    // Endpoint para efetuação de login do usuário
+    // Endpoint para usuário efetuar login
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody @Valid UserLoginDto dto) {
-
-        UsernamePasswordAuthenticationToken usernamePassword  =
-                new UsernamePasswordAuthenticationToken(
-                        dto.email(),
-                        dto.password()
-                );
-
-        Authentication auth = authenticationManager.authenticate(usernamePassword);
-        String token = jwtService.generateToken((User) auth.getPrincipal());
-
+    public ResponseEntity<TokenDto> login(@RequestBody @Valid UserLoginDto dto) {
+        String token = loginService.login(dto);
         return ResponseEntity.ok(new TokenDto(token));
     }
 }
