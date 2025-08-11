@@ -12,48 +12,40 @@ import dev.viniciussr.gamerental.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+// Serviço responsável por gerenciar operações relacionadas aos usuários da aplicação
 @Service
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    // ********** USER DETAILS SERVICE **********
-
-    // Busca um usuário por username (email)
-    // Exigido pela interface UserDetailsService
-    // Permite que o Spring Security carregue os dados do usuário durante o processo de autenticação
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
-    }
-
-    // *************** CRUD BÁSICO ***************
+    // ******************************
+    // CRUD BÁSICO
+    // ******************************
 
     // Cria um novo usuário
     public UserDto createUser(UserRegisterDto dto) {
 
-        String encryptedPassword = new BCryptPasswordEncoder().encode(dto.password());
+        String encryptedPassword = passwordEncoder.encode(dto.password()); // Criptografa a senha
 
         User user = new User(
                 dto.name(),
                 dto.email(),
-                dto.password(),
-                UserRole.USER,
+                encryptedPassword, // Define a senha criptografada
+                UserRole.USER, // Usuário é criado com role padrão 'USER'
                 dto.plan(),
-                0
+                0 // Usuário é criado com zero aluguéis ativos
         );
-        user.setPassword(encryptedPassword);
-
         return new UserDto(userRepository.save(user));
     }
 
@@ -63,16 +55,18 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado no id: " + id));
 
+        // Atualização parcial (PATCH)
+        // Se algum atributo chegar nulo, não ocorrerá a atualização do campo
         if (dto.name()     != null) user.setName(dto.name());
         if (dto.email()    != null) user.setEmail(dto.email());
-        if (dto.password() != null) user.setPassword(dto.password());
+        if (dto.password() != null) user.setPassword(passwordEncoder.encode(dto.password()));
         if (dto.role()     != null) user.setRole(dto.role());
         if (dto.plan()     != null) user.setPlan(dto.plan());
 
         return new UserDto(userRepository.save(user));
     }
 
-    // Remove um usuário existente
+    // Deleta um usuário existente
     public void deleteUser(Long id) {
 
         User user = userRepository.findById(id)
@@ -81,7 +75,9 @@ public class UserService implements UserDetailsService {
         userRepository.delete(user);
     }
 
-    // --------------- FILTROS ---------------
+    // ******************************
+    // MÉTODOS DE BUSCA
+    // ******************************
 
     // Busca um usuário pelo ID
     public UserDto findUserById(Long id) {
@@ -99,7 +95,6 @@ public class UserService implements UserDetailsService {
                 .stream()
                 .map(UserDto::new)
                 .toList();
-
         if (users.isEmpty()) {
             throw new UserNotFoundException("Nenhum usuário cadastrado no momento");
         }
@@ -109,7 +104,8 @@ public class UserService implements UserDetailsService {
     // Lista usuários por nome
     public List<UserDto> listUsersByName(String name) {
 
-        List<UserDto> users = userRepository.findByNameContainingIgnoreCase(name)
+        List<UserDto> users = userRepository
+                .findByNameContainingIgnoreCase(name) // Busca ocorrências parciais e ignora maiúsculas/minúsculas
                 .stream()
                 .map(UserDto::new)
                 .toList();
@@ -122,7 +118,8 @@ public class UserService implements UserDetailsService {
     // Lista usuários por email
     public List<UserDto> listUsersByEmail(String email) {
 
-        List<UserDto> users = userRepository.findByEmailContainingIgnoreCase(email)
+        List<UserDto> users = userRepository
+                .findByEmailContainingIgnoreCase(email) // Busca ocorrências parciais e ignora maiúsculas/minúsculas
                 .stream()
                 .map(UserDto::new)
                 .toList();
@@ -145,7 +142,7 @@ public class UserService implements UserDetailsService {
         return users;
     }
 
-    // Listar usuários por plano
+    // Lista usuários por plano
     public List<UserDto> listUsersByPlan(SubscriptionPlans plan) {
 
         List<UserDto> users = userRepository.findByPlan(plan)
@@ -158,16 +155,19 @@ public class UserService implements UserDetailsService {
         return users;
     }
 
-    // --------------- MÉTODOS UTILITÁRIOS ---------------
+    // ******************************
+    // LÓGICA DE NEGÓCIO
+    // ******************************
 
-    // Valida se o limite de aluguéis do usuário foi excedido
+    // Valida se o limite de aluguéis ativos do usuário foi excedido
     void validateUserRentalLimit(User user) {
 
-        int maxRentals = switch (user.getPlan()) {
-            case NOOB -> 1;
-            case PRO -> 3;
-            case LEGEND -> 5;
+        int maxRentals = switch (user.getPlan()) { // Busca o plano do usuário
+            case NOOB -> 1;   // Permite 1 (um) aluguel por vez
+            case PRO -> 3;    // Permite 3 (três) aluguéis por vez
+            case LEGEND -> 5; // Permite 5 (cinco) aluguéis por vez
         };
+        // Verifica se nº de aluguéis ativos é maior ou iguail ao limite
         if (user.getActiveRentals() >= maxRentals) {
             throw new PlanLimitExceededException(user);
         }
@@ -176,7 +176,20 @@ public class UserService implements UserDetailsService {
     // Atualiza contagem de alugués ativos do usuário
     void updateUserActiveRentalsCount(User user, int x) {
 
+        // Novo aluguel (x = 1) → quantidade AUMENTA 1; Devolução (x = -1) → quantidade DIMINUI 1
         user.setActiveRentals(user.getActiveRentals() + x);
+
         userRepository.save(user);
+    }
+
+    // ********** USER DETAILS SERVICE **********
+
+    // Busca um usuário por email
+    // Exigido pela interface UserDetailsService
+    // Permite que o Spring Security carregue os dados do usuário durante o processo de autenticação
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
     }
 }

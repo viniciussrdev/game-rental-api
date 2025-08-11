@@ -4,6 +4,8 @@ import dev.viniciussr.gamerental.enums.SubscriptionPlans;
 import dev.viniciussr.gamerental.enums.UserRole;
 import dev.viniciussr.gamerental.model.User;
 
+// DTO usado para retornar os dados de um usuário nas respostas da API
+// Representa um usuário já cadastrado, sem expor a senha
 public record UserDto(
         Long idUser,
         String name,

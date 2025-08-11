@@ -10,6 +10,8 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.Set;
 
+// DTO usado para cadastrar um novo jogo e retornar seus dados nas respostas da API
+// Inclui validações para garantia da integridade dos dados fornecidos pelo cliente
 public record GameDto(
 
         Long idGame,

@@ -10,6 +10,7 @@ import lombok.Setter;
 
 import java.util.Set;
 
+// Entidade que representa um jogo disponível na loja
 @Entity
 @Table(name = "tb_game")
 @Getter
@@ -21,7 +22,7 @@ public class Game {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_game")
-    private Long idGame; // ID do jogo
+    private Long idGame; // Identificador único do jogo
 
     private String title; // Título do jogo
 
@@ -35,9 +36,9 @@ public class Game {
     @Enumerated(EnumType.STRING)
     private Set<Platforms> platform; // Plataformas onde o jogo está disponível na loja
 
-    private Integer quantity; // Quantidade disponível do jogo na loja
+    private Integer quantity; // Quantidade de cópias do jogo disponíveis na loja
 
-    private boolean available; // Disponibilidade do jogo (true or false)
+    private boolean available; // Status de disponibilidade do jogo (true or false)
 
     public Game(
             String title,

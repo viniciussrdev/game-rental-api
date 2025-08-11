@@ -1,6 +1,6 @@
 package dev.viniciussr.gamerental.enums;
 
-// Enum: Coleção de plataformas dos jogos
+// Enum: coleção de plataformas dos jogos
 public enum Platforms {
     PLAYSTATION,
     XBOX,

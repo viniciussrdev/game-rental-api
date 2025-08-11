@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+// Serviço responsável por gerenciar operações relacionadas aos jogos da aplicação
 @Service
 public class GameService {
 
@@ -20,7 +21,9 @@ public class GameService {
         this.gameRepository = gameRepository;
     }
 
-    // -------------------- CRUD BÁSICO --------------------
+    // ******************************
+    // CRUD BÁSICO
+    // ******************************
 
     // Cria um novo jogo
     public GameDto createGame(GameDto dto) {
@@ -30,7 +33,7 @@ public class GameService {
                 dto.genre(),
                 dto.platform(),
                 dto.quantity(),
-                true
+                true // Jogo é criado como 'disponivel'
         );
         return new GameDto(gameRepository.save(savedGame));
     }
@@ -41,6 +44,8 @@ public class GameService {
         Game game = gameRepository.findById(id)
                 .orElseThrow(() -> new GameNotFoundException("Jogo não encontrado no id: " + id));
 
+        // Atualização parcial (PATCH)
+        // Se algum atributo chegar nulo, não ocorrerá a atualização do campo
         if (dto.title()    != null) game.setTitle(dto.title());
         if (dto.genre()    != null) game.setGenre(dto.genre());
         if (dto.platform() != null) game.setPlatform(dto.platform());
@@ -49,7 +54,7 @@ public class GameService {
         return new GameDto(gameRepository.save(game));
     }
 
-    // Remove um jogo existente
+    // Deleta um jogo existente
     public void deleteGame(Long id) {
 
         Game game = gameRepository.findById(id)
@@ -58,7 +63,9 @@ public class GameService {
         gameRepository.delete(game);
     }
 
-    // --------------- FILTROS ---------------
+    // ******************************
+    // MÉTODOS DE BUSCA
+    // ******************************
 
     // Busca um jogo pelo ID
     public GameDto findGameById(Long id) {
@@ -85,7 +92,8 @@ public class GameService {
     // Lista jogos pelo título
     public List<GameDto> listGamesByTitle(String title) {
 
-        List<GameDto> games = gameRepository.findByTitleContainingIgnoreCase(title)
+        List<GameDto> games = gameRepository
+                .findByTitleContainingIgnoreCase(title) // Busca ocorrências parciais e ignora maiúsculas/minúsculas
                 .stream()
                 .map(GameDto::new)
                 .toList();
@@ -124,22 +132,28 @@ public class GameService {
         return games;
     }
 
-    // --------------- MÉTODOS UTILITÁRIOS ---------------
+    // ******************************
+    // LÓGICA DE NEGÓCIO
+    // ******************************
 
     // Valida se o jogo está disponível para aluguel
     void validateIfGameIsAvailable(Game game) {
 
-        if (game.getQuantity() <= 0) {
+        if (game.getQuantity() <= 0) { // Verifica se quantidade do jogo é menor ou igual a zero
             throw new GameIsNotAvailableException(game);
         }
     }
 
-    // Atualiza a quantidade e a disponibilidade do jogo após aluguel ou devolução
+    // Atualiza a quantidade e a disponibilidade do jogo após novo aluguel ou devolução
+    // Utilizado nos métodos 'createRental', 'returnRental' e 'cancelRental'
     void updateGameQuantityAndAvailability(Game game, int x) {
 
+        // Novo aluguel (x = -1) → quantidade DIMINUI 1; Devolução (x = 1) → quantidade AUMENTA 1
         game.setQuantity(game.getQuantity() + x);
+
+        // Quantidade final do jogo maior que zero → jogo disponível
         game.setAvailable(game.getQuantity() > 0);
+
         gameRepository.save(game);
     }
 }
-

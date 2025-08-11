@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDate;
 import java.util.List;
 
+// Repositório responsável pelas operações de acesso a dados da entidade Rental
+// Estende JpaRepository para fornecer funcionalidades básicas de CRUD
 public interface RentalRepository extends JpaRepository<Rental, Long> {
 
     List<Rental> findByGame_IdGame(Long IdGame);

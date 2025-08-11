@@ -24,7 +24,11 @@ public class AuthController {
     private final JwtService jwtService;
 
 
-    public AuthController(AuthenticationManager authenticationManager, UserService userService, JwtService jwtService) {
+    public AuthController(
+            AuthenticationManager authenticationManager,
+            UserService userService,
+            JwtService jwtService)
+    {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.jwtService = jwtService;

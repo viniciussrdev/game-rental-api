@@ -3,7 +3,10 @@ package dev.viniciussr.gamerental.model;
 import dev.viniciussr.gamerental.enums.SubscriptionPlans;
 import dev.viniciussr.gamerental.enums.UserRole;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,6 +14,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+// Entidade que representa um usuário cadastrado na loja
+// A classe implementa a interface UserDetails, do Spring Security, usada para controle de autenticação e autorização
 @Entity
 @Table(name = "tb_user")
 @Getter
@@ -22,21 +27,21 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_user")
-    private Long idUser; // ID do usuário
+    private Long idUser; // Identificador único do usuário
 
-    private String name; // Nome do usuário
+    private String name; // Nome completo do usuário
 
-    private String email; // Email do usuário
+    private String email; // Email do usuário (login)
 
-    private String password; // Senha do usuário
-
-    @Enumerated(EnumType.STRING)
-    private UserRole role; // Tipo de usuário
+    private String password; // Senha do usuário (login)
 
     @Enumerated(EnumType.STRING)
-    private SubscriptionPlans plan; // Plano de assinatura do usuário
+    private UserRole role; // Papel do usuário (ADMIN ou USER)
 
-    private Integer activeRentals; // Aluguéis ativos do usuário
+    @Enumerated(EnumType.STRING)
+    private SubscriptionPlans plan; // Plano de assinatura do usuário (NOOB, PRO ou LEGEND)
+
+    private Integer activeRentals; // Número de aluguéis ativos do usuário
 
     public User(
             String name,
@@ -54,14 +59,12 @@ public class User implements UserDetails {
         this.activeRentals = activeRentals;
     }
 
-    // --------------- MÉTODOS DA INTERFACE USERDETAILS (Spring Security) ---------------
-
     // Retorna as permissões (authorities) do usuário de acordo com sua role
     // ADMIN recebe permissões de ADMIN e USER. USER recebe permissões só de USER.
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
 
-        if (role == null) return List.of(); // Garante que o app não quebre se role for 'null'
+        if (role == null) return List.of(); // Garante que o app não quebre se receber role 'null'
 
         return switch (role) {
             case ADMIN -> List.of(

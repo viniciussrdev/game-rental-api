@@ -1,6 +1,6 @@
 package dev.viniciussr.gamerental.enums;
 
-// Enum: Tipo de usuário
+// Enum: 'role' do usuário
 public enum UserRole {
     ADMIN,
     USER

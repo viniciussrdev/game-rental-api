@@ -14,14 +14,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+// Classe de configuração de segurança da API
+// Define regras de autorização, autenticação, política 'STATELESS'
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final VerifyToken verifyToken;
+    private final JwtTokenFilter jwtTokenFilter;
 
-    public SecurityConfig(VerifyToken verifyToken) {
-        this.verifyToken = verifyToken;
+    public SecurityConfig(JwtTokenFilter jwtTokenFilter) {
+        this.jwtTokenFilter = jwtTokenFilter;
     }
 
     // Define a cadeia de filtros de segurança com as regras de autorização/autenticação da API
@@ -66,7 +68,7 @@ public class SecurityConfig {
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(
-                        verifyToken, // Filtro de verificação do token JWT
+                        jwtTokenFilter, // Filtro de verificação do token JWT
                         UsernamePasswordAuthenticationFilter.class
                 )
                 .build();

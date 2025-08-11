@@ -1,8 +1,8 @@
 package dev.viniciussr.gamerental.enums;
 
-// Enum: Planos de assinatura
+// Enum: planos de assinatura
 public enum SubscriptionPlans {
-    NOOB, // Confere direito ao aluguel de 1 jogo por vez
-    PRO, // Confere direito ao aluguel de 3 jogos simultaneamente
-    LEGEND // Confere direito ao aluguel de 5 jogos simultaneamente
+    NOOB,  // Permite 1 (um) aluguel por vez
+    PRO,   // Permite 3 (três) aluguéis por vez
+    LEGEND // Permite 5 (cinco) aluguéis por vez
 }

@@ -9,6 +9,8 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
+// Entidade que representa um aluguel efetuado na loja
+// Cada aluguel está relacionado a um único jogo e um único usuário
 @Entity
 @Table(name = "tb_rental")
 @Getter
@@ -20,22 +22,22 @@ public class Rental {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_rental")
-    private Long idRental; // ID do aluguel
+    private Long idRental; // Identificador único do aluguel
 
     @ManyToOne
     @JoinColumn(name = "game_id")
-    private Game game; // Jogo incluído no aluguel
+    private Game game; // Referência ao jogo incluído no aluguel
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user; // Usuário solicitante do aluguel
+    private User user; // Referência ao usuário solicitante do aluguel
 
-    private LocalDate rentalDate; // Data do aluguel
+    private LocalDate rentalDate; // Data de início do aluguel
 
-    private LocalDate endDate; // Data de devolução do aluguel
+    private LocalDate endDate; // Data prevista de devolução do aluguel
 
     @Enumerated(EnumType.STRING)
-    private RentalStatus status; // Status do aluguel
+    private RentalStatus status; // Status atual do aluguel (ACTIVE, RETURNED, LATE ou CANCELLED)
 
     public Rental(
             Game game,

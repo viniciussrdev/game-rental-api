@@ -1,8 +1,13 @@
 package dev.viniciussr.gamerental.dto;
 
 import dev.viniciussr.gamerental.enums.SubscriptionPlans;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
+// DTO usado para cadastrar um novo usuário
+// Inclui validações para garantia da integridade dos dados fornecidos pelo cliente
 public record UserRegisterDto(
 
         @NotBlank(message = "Nome do usuário é campo obrigatório")

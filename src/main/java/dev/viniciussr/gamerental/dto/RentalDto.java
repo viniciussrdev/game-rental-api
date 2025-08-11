@@ -8,6 +8,8 @@ import jakarta.validation.constraints.PastOrPresent;
 
 import java.time.LocalDate;
 
+// DTO usado para cadastrar um novo aluguel e retornar seus dados nas respostas da API
+// Inclui validações para garantia da integridade dos dados fornecidos pelo cliente
 public record RentalDto(
 
         Long idRental,
