@@ -30,38 +30,51 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
 
         return http
-                .csrf(AbstractHttpConfigurer::disable) // Desabilita proteção CSRF (já que usamos JWT)
+
+                // Desabilita proteção CSRF (já que usamos JWT)
+                .csrf(AbstractHttpConfigurer::disable)
+
+                // Configura o gerenciamento de sessão para ser 'STATELESS' (sem armazenamento de sessão no servidor)
                 .sessionManagement(
                         session -> session
-                                // Política de sessão 'STATELESS' (não armazena o estado da autenticação no servidor)
                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // Regras de autorização para os endpoints da API
+
+                // Define as regras de autorização para os endpoints da API
                 .authorizeHttpRequests(
                         auth -> auth
 
-                                // Acesso irrestrito para realização de cadastro e login
+                                // Permite acesso livre para cadastro e login (rota pública)
                                 .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
 
-                                // Gerenciamento de jogos restrito aos ADMINs
-                                // USERs podem listar/buscar jogos
+                                // Controle de acesso para endpoints relacionados a jogos
+                                // Apenas ADMINs podem criar, atualizar e deletar jogos
                                 .requestMatchers(HttpMethod.POST, "/games/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PATCH, "/games/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/games/**").hasRole("ADMIN")
+                                // USERs podem listar/buscar jogos
                                 .requestMatchers(HttpMethod.GET, "/games/**").hasAnyRole("ADMIN", "USER")
 
-                                // Gerenciamento de usuários restrito aos ADMINs
+                                // Controle de acesso para endpoints relacionados a usuários
+                                // Apenas ADMINs podem criar, atualizar, deletar e listar usuários
                                 .requestMatchers(HttpMethod.POST, "/users/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PATCH, "/users/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/users/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/users/**").hasRole("ADMIN")
 
-                                // Gerenciamento de aluguéis restrito aos ADMINs
+                                // Controle de acesso para endpoints relacionados a aluguéis
+                                // Apenas ADMINs podem criar, atualizar, deletar e listar aluguéis
                                 .requestMatchers(HttpMethod.POST, "/rentals/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PATCH, "/rentals/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/rentals/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/rentals/**").hasRole("ADMIN")
+
+                                // Permite acesso livre aos endpoints do Swagger UI e documentação OpenAPI
+                                .requestMatchers(
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs/**"
+                                ).permitAll()
 
                                 // Qualquer outra requisição exige autenticação
                                 .anyRequest().authenticated()
