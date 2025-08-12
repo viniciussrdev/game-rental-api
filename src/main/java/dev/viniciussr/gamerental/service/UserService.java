@@ -182,10 +182,11 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    // ********** USER DETAILS SERVICE **********
+    // ******************************
+    // USER DETAILS SERVICE
+    // ******************************
 
     // Busca um usuário por email
-    // Exigido pela interface UserDetailsService
     // Permite que o Spring Security carregue os dados do usuário durante o processo de autenticação
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

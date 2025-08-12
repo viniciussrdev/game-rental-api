@@ -21,6 +21,7 @@ public class LoginService {
         this.jwtService = jwtService;
     }
 
+    // Efetua o login do usuário
     public String login(UserLoginDto dto) {
 
         // Cria o authToken com as credenciais recebidas do usuário
