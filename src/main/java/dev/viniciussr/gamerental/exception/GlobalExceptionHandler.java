@@ -3,6 +3,7 @@ package dev.viniciussr.gamerental.exception;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import dev.viniciussr.gamerental.exception.game.GameIsNotAvailableException;
 import dev.viniciussr.gamerental.exception.game.GameNotFoundException;
+import dev.viniciussr.gamerental.exception.jwt.*;
 import dev.viniciussr.gamerental.exception.rental.PlanLimitExceededException;
 import dev.viniciussr.gamerental.exception.rental.RentalAlreadyClosedException;
 import dev.viniciussr.gamerental.exception.rental.RentalNotFoundException;
@@ -11,6 +12,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -20,12 +22,12 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-// Captura e tratamento de exceções globais da API
+// Classe responsável por capturar e tratar exceções de forma global
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Constrói respostas de erro padronizadas com 'status', 'error', 'message' e 'timestamp'
-    private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message) {
+    // Constrói uma resposta de erro padronizada para as exceções lançadas na API, através do modelo ErrorResponse
+    private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String message) {
         ErrorResponse error = new ErrorResponse(
                 status.value(),
                 status.getReasonPhrase(),
@@ -35,122 +37,165 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, status);
     }
 
-    // Handler genérico para exceções inesperadas
-    // Retorna status 500
+    // Captura exceções genéricas inesperadas
+    // Retorna status 500 (INTERNAL SERVER ERROR)
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleUnexpectedException(Exception ex) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erro inesperado: " + ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleUnexpectedException(Exception e) {
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erro inesperado: " + e.getMessage());
     }
 
-    // Handler para exceções de regra de negócio
-    // Retorna status 400
+    // Captura exceções de regra de negócio
+    // Retorna status 400 (BAD REQUEST)
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
-    // Handler para exceção de jogo não encontrado
-    // Retorna status 404
+    // Captura exceção: jogo não encontrado
+    // Retorna status 404 (NOT FOUND)
     @ExceptionHandler(GameNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleGameNotFound(GameNotFoundException ex) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleGameNotFound(GameNotFoundException e) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
-    // Handler para exceção de usuário não encontrado
-    // Retorna status 404
+    // Captura exceção: usuário não encontrado
+    // Retorna status 404 (NOT FOUND)
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException e) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
-    // Handler para exceção de aluguel não encontrado
-    // Retorna status 404
+    // Captura exceção: aluguel não encontrado
+    // Retorna status 404 (NOT FOUND)
     @ExceptionHandler(RentalNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleRentalNotFound(RentalNotFoundException ex) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleRentalNotFound(RentalNotFoundException e) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
-    // Handler para exceção de jogo indisponível para aluguel (conflito de estado)
-    // Retorna status 409
+    // Captura exceção: jogo indisponível para aluguel (conflito de estado)
+    // Retorna status 409 (CONFLICT)
     @ExceptionHandler(GameIsNotAvailableException.class)
-    public ResponseEntity<ErrorResponse> handleGameUnavailable(GameIsNotAvailableException ex) {
-        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleGameIsNotAvailable(GameIsNotAvailableException e) {
+        return buildErrorResponse(HttpStatus.CONFLICT, e.getMessage());
     }
 
-    // Handler para exceção de usuário excedendo limite de aluguéis do plano
-    // Retorna status 422
+    // Captura exceção: limite de aluguéis ativos por plano excedido
+    // Retorna status 422 (UNPROCESSABLE ENTITY)
     @ExceptionHandler(PlanLimitExceededException.class)
-    public ResponseEntity<ErrorResponse> handlePlanLimitExceeded(PlanLimitExceededException ex) {
-        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    public ResponseEntity<ErrorResponse> handlePlanLimitExceeded(PlanLimitExceededException e) {
+        return buildErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
     }
 
-    // Handler para tentativa de devolução de jogos já devolvidos (conflito de estado)
-    // Retorna status 409
+    // Captura tentativa de devolução de jogos já devolvidos (conflito de estado)
+    // Retorna status 409 (CONFLICT)
     @ExceptionHandler(RentalAlreadyClosedException.class)
-    public ResponseEntity<ErrorResponse> handleRentalAlreadyReturned(RentalAlreadyClosedException ex) {
-        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleRentalAlreadyClosed(RentalAlreadyClosedException e) {
+        return buildErrorResponse(HttpStatus.CONFLICT, e.getMessage());
     }
 
-    // Handler para tentativa de cadastro de usuário com dados já existentes (duplicados)
-    // Retorna status 409
+    // Captura tentativa de cadastro de um usuário com dados já existentes (duplicação)
+    // Retorna status 409 (CONFLICT)
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorResponse> handleUserAlreadyExists(DataIntegrityViolationException ex) {
+    public ResponseEntity<ErrorResponse> handleUserAlreadyExists(DataIntegrityViolationException e) {
         String message = "Usuário já cadastrado";
-        return buildResponse(HttpStatus.CONFLICT, message);
+        return buildErrorResponse(HttpStatus.CONFLICT, message);
     }
 
-    // Handler para validação de argumentos recebidos (bean validation)
-    // Retorna status 400 com os campos inválidos
+    // Captura exceções de validação de argumentos recebidos (bean validation)
+    // Retorna status 400 (BAD REQUEST) com os campos inválidos
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
-        String message = ex.getBindingResult().getFieldErrors()
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors()
                 .stream()
                 .map(error -> "[" + error.getField() + "] : " + error.getDefaultMessage())
                 .collect(Collectors.joining("; "));
 
-        return buildResponse(HttpStatus.BAD_REQUEST, message);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
     }
 
-    // Handler para erros de tipo nos parâmetros da URL ou query (ex: String em campo Long)
-    // Retorna status 400 com mensagem informando o tipo esperado para o parâmetro
+    // Captura incompatibilidade de tipo nos parâmetros da URL ou query (ex: String em campo Long)
+    // Retorna status 400 (BAD REQUEST) com mensagem informando o tipo esperado para o parâmetro
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        String paramName = ex.getName();
-        String expectedType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "o tipo correto";
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+        String paramName = e.getName();
+        String expectedType = e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : "o tipo correto";
         String message = "O parâmetro " + paramName + " é inválido. Esperado: " + expectedType;
 
-        return buildResponse(HttpStatus.BAD_REQUEST, message);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
     }
 
-    // Handler para erros de leitura da requisição (JSON inválido, mal formatado, etc)
+    // Captura exceções de leitura da requisição (JSON inválido, mal formatado, etc)
     // Se a causa for InvalidFormatException, direciona para 'handlerInvalidFormat'
-    // Caso contrário, retorna erro genérico de formatação (400)
+    // Caso contrário, retorna erro genérico de formatação (BAD REQUEST)
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleMessageNotReadable(HttpMessageNotReadableException ex) {
-        Throwable cause = ex.getCause();
+    public ResponseEntity<ErrorResponse> handleMessageNotReadable(HttpMessageNotReadableException e) {
+        Throwable cause = e.getCause();
         if (cause instanceof InvalidFormatException invalidFormat) {
             return handleInvalidFormat(invalidFormat);
         }
-        return buildResponse(HttpStatus.BAD_REQUEST, "Erro de leitura dos dados enviados na requisição");
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Erro de leitura dos dados enviados na requisição");
     }
 
-    // Handler para erros de formatação no JSON (foco em tratamento de enums)
-    // Se a causa for enum inválido, retorna status 400 + lista de valores aceitos
-    // Caso contrário, retorna erro genérico de formatação (400)
+    // Captura exceções de formatação no JSON (foco em tratamento de enums inválidos)
+    // Se a causa for enum inválido, retorna status 400 (BAD REQUEST) + lista de valores aceitos
+    // Caso contrário, retorna erro genérico de formatação
     @ExceptionHandler(InvalidFormatException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidFormat(InvalidFormatException ex) {
-        if (ex.getTargetType().isEnum()) {
+    public ResponseEntity<ErrorResponse> handleInvalidFormat(InvalidFormatException e) {
+
+        if (e.getTargetType().isEnum()) {
             // Enum inválido
-            String values = Arrays.stream(ex.getTargetType().getEnumConstants())
+            String values = Arrays.stream(e.getTargetType().getEnumConstants())
                     .map(Object::toString)
                     .collect(Collectors.joining(", "));
 
-            String message = "Valor inválido: '" + ex.getValue() + "'. Aceitos: " + values;
-            return buildResponse(HttpStatus.BAD_REQUEST, message);
+            String message = "Valor inválido: '" + e.getValue() + "'. Aceitos: " + values;
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
         }
-
-        // Erro genérico
+        // Erro genérico de formatação
         String message = "Formato inválido no corpo da requisição";
-        return buildResponse(HttpStatus.BAD_REQUEST, message);
+
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
+    }
+
+    // Captura tentativa de login com credenciais inválidas
+    // Retorna status 401 (UNAUTHORIZED)
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException e) {
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Usuário ou senha inválidos");
+    }
+
+    // Captura exceção: erro ao gerar token JWT
+    // Retorna status 500 (INTERNAL SERVER ERROR)
+    @ExceptionHandler(JwtGenerationException.class)
+    public ResponseEntity<ErrorResponse> handleJwtGenerationException(JwtGenerationException e) {
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+    }
+
+    // Captura exceção: erro ao validar token JWT → expirado
+    // Retorna status 401 (UNAUTHORIZED)
+    @ExceptionHandler(JwtTokenExpiredException.class)
+    public ResponseEntity<ErrorResponse> handleExpiredToken(JwtTokenExpiredException e) {
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage());
+    }
+
+    // Captura exceção: erro ao validar token JWT → assinatura inválida
+    // Retorna status 401 (UNAUTHORIZED)
+    @ExceptionHandler(JwtSignatureVerificationException.class)
+    public ResponseEntity<ErrorResponse> handleSignatureVerification(JwtSignatureVerificationException e) {
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage());
+    }
+
+    // Captura exceção: erro ao validar token JWT → algoritmo inválido
+    // Retorna status 401 (UNAUTHORIZED)
+    @ExceptionHandler(JwtAlgorithmMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleAlgorithmMismatch(JwtAlgorithmMismatchException e) {
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage());
+    }
+
+    // Captura exceção: erro ao validar token JWT → falha na verificação
+    // Retorna status 401 (UNAUTHORIZED)
+    @ExceptionHandler(JwtVerificationException.class)
+    public ResponseEntity<ErrorResponse> handleJwtVerification(JwtVerificationException e) {
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage());
     }
 }
