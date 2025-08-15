@@ -10,12 +10,16 @@ import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.Collection;
 import java.util.List;
 
-// Entidade que representa um usuário cadastrado na loja
-// A classe implementa a interface UserDetails, do Spring Security, usada para controle de autenticação e autorização
+/** Entidade que representa um usuário cadastrado na loja.
+ * <p>
+ * Implementa a interface {@link UserDetailsService} do Spring Security,
+ * usada para controle de autenticação e autorização.
+ */
 @Entity
 @Table(name = "tb_user")
 @Getter
@@ -24,25 +28,42 @@ import java.util.List;
 @NoArgsConstructor
 public class User implements UserDetails {
 
+    /** identificador único do usuário. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_user")
-    private Long idUser; // Identificador único do usuário
+    private Long idUser;
 
-    private String name; // Nome completo do usuário
+    /** Nome completo do usuário. */
+    private String name;
 
-    private String email; // Email do usuário (login)
+    /** Endereço de e-mail do usuário (login). */
+    private String email;
 
-    private String password; // Senha do usuário (login)
+    /** Senha do usuário (login). */
+    private String password;
 
+    /** Função (role) do usuário (ADMIN ou USER). */
     @Enumerated(EnumType.STRING)
-    private UserRole role; // Papel do usuário (ADMIN ou USER)
+    private UserRole role;
 
+    /** Plano de assinaturas do usuário (NOOB, PRO ou LEGEND). */
     @Enumerated(EnumType.STRING)
-    private SubscriptionPlans plan; // Plano de assinatura do usuário (NOOB, PRO ou LEGEND)
+    private SubscriptionPlans plan;
 
-    private Integer activeRentals; // Número de aluguéis ativos do usuário
+    /** Quantidade de aluguéis ativos do usuário. */
+    private Integer activeRentals;
 
+    /**
+     * Construtor para criação de um novo usuário.
+     *
+     * @param name          nome do usuário.
+     * @param email         e-mail do usuário.
+     * @param password      senha do usuário.
+     * @param role          função do usuário.
+     * @param plan          plano de assinatura.
+     * @param activeRentals quantidade de aluguéis ativos.
+     */
     public User(
             String name,
             String email,
@@ -59,8 +80,14 @@ public class User implements UserDetails {
         this.activeRentals = activeRentals;
     }
 
-    // Retorna as permissões (authorities) do usuário de acordo com sua role
-    // ADMIN recebe permissões de ADMIN e USER. USER recebe permissões só de USER.
+    /**
+     * Retorna as permissões (authorities) do usuário de acordo com sua role.
+     * <p>
+     * ADMIN recebe permissões de ADMIN e USER.
+     * USER recebe somente permissões de USER.
+     *
+     * @return lista de permissões do usuário
+     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
 
@@ -77,31 +104,47 @@ public class User implements UserDetails {
         };
     }
 
-    // Retorna o email como identificador do usuário no sistema (username)
+    /**
+     * Retorna o e-mail como identificador (username) do usuário no sistema.
+     *
+     * @return e-mail do usuário
+     */
     @Override
     public String getUsername() {
         return this.email;
     }
 
-    // Indica se a conta está expirada
+    /**
+     * Verifica se a conta está expirada.
+     * {@inheritDoc}
+     */
     @Override
     public boolean isAccountNonExpired() {
         return UserDetails.super.isAccountNonExpired();
     }
 
-    // Indica se a conta está bloqueada
+    /**
+     * Verifica se a conta está bloqueada.
+     * {@inheritDoc}
+     */
     @Override
     public boolean isAccountNonLocked() {
         return UserDetails.super.isAccountNonLocked();
     }
 
-    // Indica se as credenciais estão expiradas
+    /**
+     * Verifica se as credenciais estão expiradas.
+     * {@inheritDoc}
+     */
     @Override
     public boolean isCredentialsNonExpired() {
         return UserDetails.super.isCredentialsNonExpired();
     }
 
-    // Indica se o usuário está habilitado
+    /**
+     * Verifica se o usuário está habilitado.
+     * {@inheritDoc}
+     */
     @Override
     public boolean isEnabled() {
         return UserDetails.super.isEnabled();

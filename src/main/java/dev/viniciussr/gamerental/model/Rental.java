@@ -9,8 +9,10 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
-// Entidade que representa um aluguel efetuado na loja
-// Cada aluguel está relacionado a um único jogo e um único usuário
+/** Entidade que representa um aluguel efetuado na loja.
+ * <p>
+ * Cada aluguel está relacionado a um único jogo e usuário.
+ */
 @Entity
 @Table(name = "tb_rental")
 @Getter
@@ -19,26 +21,41 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class Rental {
 
+    /** Identificador único do aluguel. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_rental")
-    private Long idRental; // Identificador único do aluguel
+    private Long idRental;
 
+    /** Referência ao jogo alugado. */
     @ManyToOne
     @JoinColumn(name = "game_id")
-    private Game game; // Referência ao jogo incluído no aluguel
+    private Game game;
 
+    /** Referência ao usuário solicitante do aluguel. */
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user; // Referência ao usuário solicitante do aluguel
+    private User user;
 
-    private LocalDate rentalDate; // Data de início do aluguel
+    /** Data de início do aluguel. */
+    private LocalDate rentalDate;
 
-    private LocalDate endDate; // Data prevista de devolução do aluguel
+    /** Data de encerramento prevista do aluguel. */
+    private LocalDate endDate;
 
+    /** Status atual do aluguel (ACTIVE, RETURNED, LATE ou CANCELLED). */
     @Enumerated(EnumType.STRING)
-    private RentalStatus status; // Status atual do aluguel (ACTIVE, RETURNED, LATE ou CANCELLED)
+    private RentalStatus status;
 
+    /**
+     * Construtor para criação de um novo aluguel.
+     *
+     * @param game       referência ao jogo alugado.
+     * @param user       referência ao usuário solicitante.
+     * @param rentalDate data de início do aluguel.
+     * @param endDate    data prevista para encerramento.
+     * @param status     status atual do aluguel.
+     */
     public Rental(
             Game game,
             User user,

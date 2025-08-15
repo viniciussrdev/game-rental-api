@@ -10,8 +10,19 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.Set;
 
-// DTO usado para cadastrar um novo jogo e retornar seus dados nas respostas da API
-// Inclui validações para garantia da integridade dos dados fornecidos pelo cliente
+/**
+ * DTO utilizado para cadastrar um novo jogo e retornar seus dados nas respostas da API.
+ * <p>
+ * Inclui validações para garantir a integridade dos dados fornecidos pelo cliente.
+ * </p>
+ *
+ * @param idGame    identificador único do jogo.
+ * @param title     título do jogo (não pode estar em branco).
+ * @param genre     gênero do jogo (não pode ser nulo).
+ * @param platform  conjunto de plataformas em que o jogo está disponível (não pode ser nulo).
+ * @param quantity  quantidade disponível em estoque (mínimo 1, máximo 100).
+ * @param available indica se o jogo está disponível para aluguel.
+ */
 public record GameDto(
 
         Long idGame,

@@ -5,12 +5,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-// Classe de configuração de senhas da API
-// Define o encriptador de senhas
+/**
+ * Configuração de senha da API.
+ */
 @Configuration
 public class PasswordConfig {
 
-    // Encripta senhas utilizando o algoritmo BCrypt
+    /**
+     * Criptografa senhas utilizando o algoritmo BCrypt.
+     *
+     * @return PasswordEncoder configurado com BCrypt.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

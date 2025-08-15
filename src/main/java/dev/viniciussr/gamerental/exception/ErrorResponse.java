@@ -4,15 +4,22 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
 
-// Representa o modelo padrão para resposta de erro da API
+/**
+ * Representa o modelo padrão para respostas de erro da API.
+ *
+ * @param status    código HTTP do erro
+ * @param error     descrição resumida do tipo de erro
+ * @param message   mensagem detalhada sobre o erro ocorrido
+ * @param timestamp data e hora em que o erro foi gerado
+ */
 public record ErrorResponse(
 
-        int status, // Código HTTP do erro
+        int status,
 
-        String error, // Descrição resumida do tipo de erro
+        String error,
 
-        String message, // Mensagem detalhada sobre o erro ocorrido
+        String message,
 
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        LocalDateTime timestamp // Data e hora em que o erro foi gerado
+        LocalDateTime timestamp
 ) {}

@@ -23,9 +23,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-// Filtro que intercepta as requisições HTTP e verifica a presença e validade de um token JWT
-// Se o token for válido, o usuário é autenticado no contexto de segurança do Spring
-// Executado uma única vez por requisição
+/**
+ * Filtro que intercepta requisições HTTP para verificar a presença e validade de tokens JWT.
+ * <p>
+ * Se o token for válido, autentica o usuário no contexto de segurança do Spring.
+ * Executado uma única vez por requisição.
+ * </p>
+ */
 @Component
 public class JwtTokenFilter extends OncePerRequestFilter {
 
@@ -37,6 +41,15 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
+    /**
+     * Filtra a requisição, validando o token JWT caso presente no header Authorization.
+     *
+     * @param request            Requisição HTTP.
+     * @param response           Resposta HTTP.
+     * @param filterChain        Cadeia de filtros.
+     * @throws ServletException  Erro durante o processamento do filtro.
+     * @throws IOException       Erro de entrada/saída.
+     */
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -61,7 +74,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
             String email = JWT.decode(token).getSubject(); // Extrai o e-mail (subject) do token
 
-            User user = (User) userDetailsService.loadUserByUsername(email); // Carrega o usuário com base no email
+            User user = (User) userDetailsService.loadUserByUsername(email); // Carrega o usuário com base no e-mail
 
             // Cria o authToken com os dados do usuário e suas permissões
             UsernamePasswordAuthenticationToken authToken =
@@ -86,8 +99,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
                 default -> throw new JwtVerificationException("Falha na verificação do token");
             }
-            }
-
+        }
             // Continua o processamento da requisição
         filterChain.doFilter(request, response);
     }

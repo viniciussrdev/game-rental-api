@@ -22,11 +22,23 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-// Classe responsável por capturar e tratar exceções de forma global
+/**
+ * Classe responsável por capturar e tratar exceções de forma global na API.
+ * <p>
+ * Utiliza {@link RestControllerAdvice} para interceptar exceções lançadas
+ * pelos controllers e retornar respostas padronizadas do tipo {@link ErrorResponse}.
+ * </p>
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Constrói uma resposta de erro padronizada para as exceções lançadas na API, através do modelo ErrorResponse
+    /**
+     * Constrói uma resposta de erro padronizada para as exceções lançadas.
+     *
+     * @param status  status HTTP da resposta.
+     * @param message mensagem de erro detalhada.
+     * @return ResponseEntity contendo {@link ErrorResponse} com dados do erro.
+     */
     private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String message) {
         ErrorResponse error = new ErrorResponse(
                 status.value(),
@@ -37,72 +49,112 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, status);
     }
 
-    // Captura exceções genéricas inesperadas
-    // Retorna status 500 (INTERNAL SERVER ERROR)
+    /**
+     * Trata exceções genéricas inesperadas.
+     *
+     * @param e exceção genérica {@link Exception}.
+     * @return Resposta HTTP 500 (INTERNAL SERVER ERROR) com mensagem de erro.
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpectedException(Exception e) {
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erro inesperado: " + e.getMessage());
     }
 
-    // Captura exceções de regra de negócio
-    // Retorna status 400 (BAD REQUEST)
+    /**
+     * Trata exceções de regra de negócio.
+     *
+     * @param e exceção do tipo {@link BusinessException}.
+     * @return Resposta HTTP 400 (BAD REQUEST) com mensagem de erro.
+     */
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
-    // Captura exceção: jogo não encontrado
-    // Retorna status 404 (NOT FOUND)
+    /**
+     * Trata exceção: jogo não encontrado.
+     *
+     * @param e exceção do tipo {@link GameNotFoundException}.
+     * @return Resposta HTTP 404 (NOT FOUND) com mensagem de erro.
+     */
     @ExceptionHandler(GameNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleGameNotFound(GameNotFoundException e) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
-    // Captura exceção: usuário não encontrado
-    // Retorna status 404 (NOT FOUND)
+    /**
+     * Trata exceção: usuário não encontrado.
+     *
+     * @param e exceção do tipo {@link UserNotFoundException}.
+     * @return Resposta HTTP 404 (NOT FOUND) com mensagem de erro.
+     */
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException e) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
-    // Captura exceção: aluguel não encontrado
-    // Retorna status 404 (NOT FOUND)
+    /**
+     * Trata exceção: aluguel não encontrado.
+     *
+     * @param e exceção do tipo {@link RentalNotFoundException}.
+     * @return Resposta HTTP 404 (NOT FOUND) com mensagem de erro.
+     */
     @ExceptionHandler(RentalNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleRentalNotFound(RentalNotFoundException e) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
-    // Captura exceção: jogo indisponível para aluguel (conflito de estado)
-    // Retorna status 409 (CONFLICT)
+    /**
+     * Trata exceção: jogo indisponível para aluguel.
+     *
+     * @param e exceção do tipo {@link GameIsNotAvailableException}.
+     * @return Resposta HTTP 409 (CONFLICT) com mensagem de erro.
+     */
     @ExceptionHandler(GameIsNotAvailableException.class)
     public ResponseEntity<ErrorResponse> handleGameIsNotAvailable(GameIsNotAvailableException e) {
         return buildErrorResponse(HttpStatus.CONFLICT, e.getMessage());
     }
 
-    // Captura exceção: limite de aluguéis ativos por plano excedido
-    // Retorna status 422 (UNPROCESSABLE ENTITY)
+    /**
+     * Trata exceção: limite de aluguéis ativos por plano excedido.
+     *
+     * @param e exceção do tipo {@link PlanLimitExceededException}.
+     * @return Resposta HTTP 422 (UNPROCESSABLE ENTITY) com mensagem de erro.
+     */
     @ExceptionHandler(PlanLimitExceededException.class)
     public ResponseEntity<ErrorResponse> handlePlanLimitExceeded(PlanLimitExceededException e) {
         return buildErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
     }
 
-    // Captura tentativa de devolução de jogos já devolvidos (conflito de estado)
-    // Retorna status 409 (CONFLICT)
+    /**
+     * Trata exceção: tentativa de devolução de aluguel já encerrado.
+     *
+     * @param e exceção do tipo {@link RentalAlreadyClosedException}.
+     * @return Resposta HTTP 409 (CONFLICT) com com mensagem de erro.
+     */
     @ExceptionHandler(RentalAlreadyClosedException.class)
     public ResponseEntity<ErrorResponse> handleRentalAlreadyClosed(RentalAlreadyClosedException e) {
         return buildErrorResponse(HttpStatus.CONFLICT, e.getMessage());
     }
 
-    // Captura tentativa de cadastro de um usuário com dados já existentes (duplicação)
-    // Retorna status 409 (CONFLICT)
+    /**
+     * Trata tentativas de cadastro de usuário com dados já existentes.
+     *
+     * @param e exceção do tipo {@link DataIntegrityViolationException}.
+     * @return Resposta HTTP 409 (CONFLICT) com mensagem de duplicidade.
+     */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleUserAlreadyExists(DataIntegrityViolationException e) {
         String message = "Usuário já cadastrado";
         return buildErrorResponse(HttpStatus.CONFLICT, message);
     }
 
-    // Captura exceções de validação de argumentos recebidos (bean validation)
-    // Retorna status 400 (BAD REQUEST) com os campos inválidos
+    /**
+     * Trata exceções de validação de argumentos recebidos (bean validation).
+     *
+     * @param e exceção do tipo {@link MethodArgumentNotValidException}.
+     * @return Resposta HTTP 400 (BAD REQUEST) com campos inválidos detalhados.
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getFieldErrors()
@@ -113,8 +165,12 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
     }
 
-    // Captura incompatibilidade de tipo nos parâmetros da URL ou query (ex: String em campo Long)
-    // Retorna status 400 (BAD REQUEST) com mensagem informando o tipo esperado para o parâmetro
+    /**
+     * Trata incompatibilidade de tipo nos parâmetros da URL ou query.
+     *
+     * @param e exceção do tipo {@link MethodArgumentTypeMismatchException}.
+     * @return Resposta HTTP 400 (BAD REQUEST) informando o tipo esperado.
+     */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
         String paramName = e.getName();
@@ -124,9 +180,12 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
     }
 
-    // Captura exceções de leitura da requisição (JSON inválido, mal formatado, etc)
-    // Se a causa for InvalidFormatException, direciona para 'handlerInvalidFormat'
-    // Caso contrário, retorna erro genérico de formatação (BAD REQUEST)
+    /**
+     * Trata exceções de leitura da requisição (JSON inválido, mal formatado, etc).
+     *
+     * @param e exceção do tipo {@link HttpMessageNotReadableException}.
+     * @return Resposta HTTP 400 (BAD REQUEST) ou tratamento específico de formatação.
+     */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleMessageNotReadable(HttpMessageNotReadableException e) {
         Throwable cause = e.getCause();
@@ -136,9 +195,12 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Erro de leitura dos dados enviados na requisição");
     }
 
-    // Captura exceções de formatação no JSON (foco em tratamento de enums inválidos)
-    // Se a causa for enum inválido, retorna status 400 (BAD REQUEST) + lista de valores aceitos
-    // Caso contrário, retorna erro genérico de formatação
+    /**
+     * Trata exceções de formatação no JSON, focando em enums inválidos.
+     *
+     * @param e exceção do tipo {@link InvalidFormatException}.
+     * @return Resposta HTTP 400 (BAD REQUEST) com lista de valores aceitos ou mensagem genérica.
+     */
     @ExceptionHandler(InvalidFormatException.class)
     public ResponseEntity<ErrorResponse> handleInvalidFormat(InvalidFormatException e) {
 
@@ -157,43 +219,67 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
     }
 
-    // Captura tentativa de login com credenciais inválidas
-    // Retorna status 401 (UNAUTHORIZED)
+    /**
+     * Trata exceção: login com credenciais inválidas.
+     *
+     * @param e exceção do tipo {@link BadCredentialsException}.
+     * @return Resposta HTTP 401 (UNAUTHORIZED) com mensagem de erro.
+     */
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException e) {
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Usuário ou senha inválidos");
     }
 
-    // Captura exceção: erro ao gerar token JWT
-    // Retorna status 500 (INTERNAL SERVER ERROR)
+    /**
+     * Trata exceção: erro ao gerar token JWT.
+     *
+     * @param e exceção do tipo {@link JwtGenerationException}.
+     * @return Resposta HTTP 500 (INTERNAL SERVER ERROR) com mensagem de erro.
+     */
     @ExceptionHandler(JwtGenerationException.class)
     public ResponseEntity<ErrorResponse> handleJwtGenerationException(JwtGenerationException e) {
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
     }
 
-    // Captura exceção: erro ao validar token JWT → expirado
-    // Retorna status 401 (UNAUTHORIZED)
+    /**
+     * Trata exceção: token JWT expirado.
+     *
+     * @param e exceção do tipo {@link JwtTokenExpiredException}.
+     * @return Resposta HTTP 401 (UNAUTHORIZED) com mensagem de erro.
+     */
     @ExceptionHandler(JwtTokenExpiredException.class)
     public ResponseEntity<ErrorResponse> handleExpiredToken(JwtTokenExpiredException e) {
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage());
     }
 
-    // Captura exceção: erro ao validar token JWT → assinatura inválida
-    // Retorna status 401 (UNAUTHORIZED)
+    /**
+     * Trata exceção: assinatura do token JWT inválida.
+     *
+     * @param e exceção do tipo {@link JwtSignatureVerificationException}.
+     * @return Resposta HTTP 401 (UNAUTHORIZED) com mensagem de erro.
+     */
     @ExceptionHandler(JwtSignatureVerificationException.class)
     public ResponseEntity<ErrorResponse> handleSignatureVerification(JwtSignatureVerificationException e) {
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage());
     }
 
-    // Captura exceção: erro ao validar token JWT → algoritmo inválido
-    // Retorna status 401 (UNAUTHORIZED)
+    /**
+     * Trata exceção: algoritmo do token JWT inválido.
+     *
+     * @param e exceção do tipo {@link JwtAlgorithmMismatchException}.
+     * @return Resposta HTTP 401 (UNAUTHORIZED) com mensagem de erro.
+     */
     @ExceptionHandler(JwtAlgorithmMismatchException.class)
     public ResponseEntity<ErrorResponse> handleAlgorithmMismatch(JwtAlgorithmMismatchException e) {
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage());
     }
 
-    // Captura exceção: erro ao validar token JWT → falha na verificação
-    // Retorna status 401 (UNAUTHORIZED)
+    /**
+     * Trata exceção: falha na verificação do token JWT.
+     *
+     * @param e exceção do tipo {@link JwtVerificationException}.
+     * @return Resposta HTTP 401 (UNAUTHORIZED) com mensagem de erro.
+     */
     @ExceptionHandler(JwtVerificationException.class)
     public ResponseEntity<ErrorResponse> handleJwtVerification(JwtVerificationException e) {
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage());

@@ -7,8 +7,17 @@ import jakarta.validation.constraints.Min;
 
 import java.util.Set;
 
-// DTO usado para atualização parcial dos dados de um jogo (PATCH)
-// Contém apenas os campos que podem ser atualizados externamente
+/**
+ * DTO utilizado para atualização parcial dos dados de um jogo (requisição PATCH).
+ * <p>
+ * Contém apenas os campos que podem ser atualizados externamente.
+ * </p>
+ *
+ * @param title    novo título do jogo.
+ * @param genre    novo gênero do jogo.
+ * @param platform novas plataformas em que o jogo estará disponível.
+ * @param quantity nova quantidade disponível em estoque (mínimo 1, máximo 100).
+ */
 public record GameUpdateDto(
 
         String title,

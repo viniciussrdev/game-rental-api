@@ -3,7 +3,9 @@ package dev.viniciussr.gamerental.service;
 import dev.viniciussr.gamerental.dto.RentalDto;
 import dev.viniciussr.gamerental.dto.RentalUpdateDto;
 import dev.viniciussr.gamerental.enums.RentalStatus;
+import dev.viniciussr.gamerental.exception.game.GameIsNotAvailableException;
 import dev.viniciussr.gamerental.exception.game.GameNotFoundException;
+import dev.viniciussr.gamerental.exception.rental.PlanLimitExceededException;
 import dev.viniciussr.gamerental.exception.rental.RentalAlreadyClosedException;
 import dev.viniciussr.gamerental.exception.rental.RentalNotFoundException;
 import dev.viniciussr.gamerental.exception.user.UserNotFoundException;
@@ -19,7 +21,12 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 
-// Serviço responsável por gerenciar operações relacionadas aos aluguéis da aplicação
+/**
+ * Serviço responsável por gerenciar operações relacionadas aos aluguéis da aplicação.
+ * <p>
+ * Inclui criação, atualização, exclusão, busca e regras de negócio.
+ * </p>
+ */
 @Service
 public class RentalService {
 
@@ -48,10 +55,22 @@ public class RentalService {
     // CRUD BÁSICO
     // ******************************
 
-    // Cria um novo aluguel
+    /**
+     * Cria um novo aluguel no sistema.
+     * <p>
+     * Aluguel é criado a partir dos IDs de jogo e usuário informados,
+     * com data de início como 'hoje', data prevista de devolução em 15 dias e status ATIVO.
+     * Aplica validações de disponibilidade do jogo e limite de aluguéis do usuário.
+     * </p>
+     *
+     * @param dto objeto com os dados do aluguel a ser criado.
+     * @return  DTO do aluguel criado ({@link RentalDto}).
+     * @throws GameNotFoundException        se o jogo não for encontrado.
+     * @throws UserNotFoundException        se o usuário não for encontrado.
+     * @throws GameIsNotAvailableException  se o jogo estiver indisponível.
+     * @throws PlanLimitExceededException   se o usuário tiver excedido o limite do plano.
+     */
     public RentalDto createRental(RentalDto dto) {
-
-        // Aluguel é criado a partir dos IDs do jogo e do usuário
 
         Game game = gameRepository.findById(dto.gameId())
                 .orElseThrow(() -> new GameNotFoundException("Jogo não encontrado no id: " + dto.gameId()));
@@ -67,9 +86,9 @@ public class RentalService {
         Rental rental = new Rental(
                 game,
                 user,
-                today, // Data de início do aluguel: hoje (data atual)
-                today.plusDays(15), // Data prevista para devolução: 15 dias a partir de 'hoje' (padrão)
-                RentalStatus.ACTIVE // Aluguel é criado com status 'ACTIVE'
+                today, // Data de início: hoje (data atual)
+                today.plusDays(15), // Data prevista para devolução: 15 dias a partir de 'hoje'
+                RentalStatus.ACTIVE // Ativo
         );
 
         gameService.updateGameQuantityAndAvailability(game, -1); // Atualiza quantidade do jogo na loja (-1)
@@ -78,7 +97,21 @@ public class RentalService {
         return new RentalDto(rentalRepository.save(rental));
     }
 
-    // Atualiza um aluguel existente
+    /**
+     * Atualiza os dados de um aluguel existente (correção de jogo/usuário).
+     * <p>
+     * Apenas os campos não nulos no DTO serão atualizados.
+     * Não permite alterações se o aluguel já estiver encerrado (RETURNED ou CANCELLED).
+     * </p>
+     *
+     * @param id  ID do aluguel.
+     * @param dto DTO com os dados de atualização.
+     * @return DTO do aluguel atualizado ({@link RentalDto}).
+     * @throws RentalNotFoundException      se o aluguel não for encontrado.
+     * @throws RentalAlreadyClosedException se o aluguel já estiver encerrado.
+     * @throws GameNotFoundException        se o novo jogo (quando informado) não for encontrado.
+     * @throws UserNotFoundException        se o novo usuário (quando informado) não for encontrado.
+     */
     public RentalDto updateRental(Long id, RentalUpdateDto dto) {
 
         Rental rental = rentalRepository.findById(id)
@@ -88,9 +121,6 @@ public class RentalService {
         if (rental.getStatus() == RentalStatus.RETURNED || rental.getStatus() == RentalStatus.CANCELLED ) {
             throw new RentalAlreadyClosedException("Não é possível alterar um aluguel já encerrado.");
         }
-
-        // Atualização parcial (PATCH)
-        // Se algum atributo chegar nulo, não ocorrerá a atualização do campo
 
         if (dto.gameId() != null) {
             Game game = gameRepository.findById(dto.gameId())
@@ -109,7 +139,12 @@ public class RentalService {
         return new RentalDto(rentalRepository.save(rental));
     }
 
-    // Deleta um aluguel existente
+    /**
+     * Remove um aluguel existente do sistema.
+     *
+     * @param id ID do aluguel a ser deletado.
+     * @throws RentalNotFoundException se o aluguel não for encontrado.
+     */
     public void deleteRental(Long id) {
 
 
@@ -123,7 +158,13 @@ public class RentalService {
     // MÉTODOS DE BUSCA
     // ******************************
 
-    // Busca um aluguel pelo ID
+    /**
+     * Busca um aluguel pelo seu ID.
+     *
+     * @param id ID do aluguel.
+     * @return DTO do aluguel encontrado pelo ID ({@link RentalDto}).
+     * @throws RentalNotFoundException se o aluguel não for encontrado.
+     */
     public RentalDto findRentalById(Long id) {
 
         return rentalRepository.findById(id)
@@ -131,7 +172,12 @@ public class RentalService {
                 .orElseThrow(() -> new RentalNotFoundException("Aluguel não encontrado no id: " + id));
     }
 
-    // Lista todos os aluguéis cadastrados
+    /**
+     * Lista todos os aluguéis cadastrados.
+     *
+     * @return Lista de todos os aluguéis {@link RentalDto}.
+     * @throws RentalNotFoundException se não houver aluguéis cadastrados.
+     */
     public List<RentalDto> listRentals() {
 
         List<RentalDto> rentals = rentalRepository.findAll()
@@ -141,10 +187,17 @@ public class RentalService {
         if (rentals.isEmpty()) {
             throw new RentalNotFoundException("Nenhum aluguel cadastrado no momento");
         }
+
         return rentals;
     }
 
-    // Lista aluguéis por ID do jogo
+    /**
+     * Lista aluguéis pelo ID do jogo.
+     *
+     * @param idGame ID do jogo.
+     * @return Lista de aluguéis pelo ID do jogo informado ({@link RentalDto}).
+     * @throws RentalNotFoundException se nenhum aluguel for encontrado.
+     */
     public List<RentalDto> listRentalsByGameId(Long idGame) {
 
         List<RentalDto> rentals = rentalRepository.findByGame_IdGame(idGame)
@@ -157,7 +210,13 @@ public class RentalService {
         return rentals;
     }
 
-    // Lista aluguéis por ID do usuário
+    /**
+     * Lista aluguéis pelo ID do usuário.
+     *
+     * @param idUser ID do usuário.
+     * @return Lista de aluguéis pelo ID do usuário informado ({@link RentalDto}).
+     * @throws RentalNotFoundException se nenhum aluguel for encontrado.
+     */
     public List<RentalDto> listRentalsByUserId(Long idUser) {
 
         List<RentalDto> rentals = rentalRepository.findByUser_IdUser(idUser)
@@ -170,8 +229,14 @@ public class RentalService {
         return rentals;
     }
 
-    // Lista aluguéis por data de início
-    public List<RentalDto> listRentalsByLoanDate(LocalDate rentalDate) {
+    /**
+     * Lista aluguéis pela data de início.
+     *
+     * @param rentalDate data de início do aluguel.
+     * @return Lista de aluguéis pela data de início informada ({@link RentalDto}).
+     * @throws RentalNotFoundException se nenhum aluguel for encontrado.
+     */
+    public List<RentalDto> listRentalsByRentalDate(LocalDate rentalDate) {
 
         List<RentalDto> rentals = rentalRepository.findByRentalDate(rentalDate)
                 .stream()
@@ -183,20 +248,32 @@ public class RentalService {
         return rentals;
     }
 
-    // Lista aluguéis por data de devolução
-    public List<RentalDto> listRentalsByReturnDate(LocalDate returnDate) {
+    /**
+     * Lista aluguéis pela data de encerramento prevista.
+     *
+     * @param endDate data de encerramento do aluguel.
+     * @return Lista de aluguéis pela data de encerramento informada ({@link RentalDto}).
+     * @throws RentalNotFoundException se nenhum aluguel for encontrado.
+     */
+    public List<RentalDto> listRentalsByEndDate(LocalDate endDate) {
 
-        List<RentalDto> rentals = rentalRepository.findByEndDate(returnDate)
+        List<RentalDto> rentals = rentalRepository.findByEndDate(endDate)
                 .stream()
                 .map(RentalDto::new)
                 .toList();
         if (rentals.isEmpty()) {
-            throw new RentalNotFoundException("Nenhum aluguel encontrado na seguinte data: " + returnDate);
+            throw new RentalNotFoundException("Nenhum aluguel encontrado na seguinte data: " + endDate);
         }
         return rentals;
     }
 
-    // Lista aluguéis pelo status
+    /**
+     * Lista aluguéis pelo seu status.
+     *
+     * @param rentalStatus status do alguel.
+     * @return Lista de aluguéis pelo status informado ({@link RentalDto}).
+     * @throws RentalNotFoundException se nenhum aluguel for encontrado.
+     */
     public List<RentalDto> listRentalsByStatus(RentalStatus rentalStatus) {
 
         List<RentalDto> rentals = rentalRepository.findByStatus(rentalStatus)
@@ -209,7 +286,13 @@ public class RentalService {
         return rentals;
     }
 
-    // Lista aluguéis por nome de usuário
+    /**
+     * Lista aluguéis pelo nome de usuário (username).
+     *
+     * @param userName nome de usuário.
+     * @return Lista de aluguéis pelo username informado ({@link RentalDto}).
+     * @throws RentalNotFoundException se nenhum aluguel for encontrado.
+     */
     public List<RentalDto> listRentalsByUserName(String userName) {
 
         List<RentalDto> rentals =  rentalRepository.findByUser_Name(userName)
@@ -222,7 +305,13 @@ public class RentalService {
         return rentals;
     }
 
-    // Lista aluguéis pelo título do jogo
+    /**
+     * Lista aluguéis pelo título do jogo.
+     *
+     * @param gameTitle título do jogo.
+     * @return Lista de aluguéis pelo título informado ({@link RentalDto}).
+     * @throws RentalNotFoundException se nenhum aluguel for encontrado.
+     */
     public List<RentalDto> listRentalsByGameTitle(String gameTitle) {
 
         List<RentalDto> rentals =   rentalRepository.findByGame_Title(gameTitle)
@@ -239,8 +328,17 @@ public class RentalService {
     // LÓGICA DE NEGÓCIO
     // ******************************
 
-    // Verifica se o aluguel está ativo e o retorna
-    // Utilizado nos métodos 'returnRental', 'renewRental' e 'cancelRental'
+    /**
+     * Obtém um aluguel ativo (status {@link RentalStatus#ACTIVE}) pelo ID.
+     * <p>
+     * Utilizado por {@link #returnRental(Long)}, {@link #renewRental(Long)} e {@link #cancelRental(Long)}.
+     * </p>
+     *
+     * @param id ID do aluguel.
+     * @return Entidade {@link Rental} ativa.
+     * @throws RentalNotFoundException       se o aluguel não for encontrado.
+     * @throws RentalAlreadyClosedException  se o aluguel não estiver ativo.
+     */
     private Rental getActiveRental(Long id) {
 
         Rental rental = rentalRepository.findById(id)
@@ -253,21 +351,37 @@ public class RentalService {
         return rental;
     }
 
-    // Devolve um aluguel
+    /**
+     * Realiza a devolução de um aluguel.
+     * <p>
+     * Define status como {@link RentalStatus#RETURNED}, data de encerramento como 'hoje'
+     * e atualiza quantidade do jogo e contador de aluguéis ativos do usuário.
+     * </p>
+     *
+     * @param id ID do aluguel.
+     * @throws RentalNotFoundException       se o aluguel não for encontrado.
+     * @throws RentalAlreadyClosedException  se o aluguel não estiver ativo.
+     */
     public void returnRental(Long id) {
 
-        Rental rental = getActiveRental(id); // Verifica se aluguel está ativo
+        Rental rental = getActiveRental(id); // Verifica se o aluguel está ativo
 
         rental.setStatus(RentalStatus.RETURNED); // Define status do aluguel como 'RETURNED' (devolvido)
-        rental.setEndDate(LocalDate.now()); // Define data de devolução como 'hoje' (data atual)
+        rental.setEndDate(LocalDate.now()); // Define data de encerramento como 'hoje' (data atual)
 
         gameService.updateGameQuantityAndAvailability(rental.getGame(), 1); // Atualiza quantidade do jogo
-        userService.updateUserActiveRentalsCount(rental.getUser(), -1); // Atualiza contagem de aluguéis ativos
+        userService.updateUserActiveRentalsCount(rental.getUser(), -1); // Atualiza contador de aluguéis ativos
 
         rentalRepository.save(rental);
     }
 
-    // Renova um aluguel por mais 7 dias
+    /**
+     * Renova um aluguel ativo por mais 7 dias.
+     *
+     * @param id ID do aluguel.
+     * @throws RentalNotFoundException       se o aluguel não for encontrado.
+     * @throws RentalAlreadyClosedException  se o aluguel não estiver ativo.
+     */
     public void renewRental(Long id) {
 
         Rental rental = getActiveRental(id); // Verifica se o aluguel está ativo
@@ -276,42 +390,54 @@ public class RentalService {
         rentalRepository.save(rental);
     }
 
-    // Cancela um aluguel
-    public Rental cancelRental(Long id) {
+    /**
+     * Cancela um aluguel ativo.
+     * <p>
+     * Define status como {@link RentalStatus#CANCELLED}, data de encerramento como 'hoje'
+     * e atualiza quantidade do jogo e contador de aluguéis ativos do usuário.
+     * </p>
+     *
+     * @param id ID do aluguel.
+     * @throws RentalNotFoundException       se o aluguel não for encontrado.
+     * @throws RentalAlreadyClosedException  se o aluguel não estiver ativo.
+     */
+    public void cancelRental(Long id) {
 
         Rental rental = getActiveRental(id); // Verifica se o aluguel está ativo
 
         rental.setStatus(RentalStatus.CANCELLED); // Define status do aluguel como 'CANCELLED' (cancelado)
-        rental.setEndDate(LocalDate.now()); // Define data de devolução como 'hoje' (data atual)
+        rental.setEndDate(LocalDate.now()); // Define data de encerramento como 'hoje' (data atual)
 
         gameService.updateGameQuantityAndAvailability(rental.getGame(), 1); // Atualiza quantidade do jogo
-        userService.updateUserActiveRentalsCount(rental.getUser(), -1); // Atualiza contagem de aluguéis ativos
+        userService.updateUserActiveRentalsCount(rental.getUser(), -1); // Atualiza contador de aluguéis ativos
 
         rentalRepository.save(rental);
-
-        return rental;
     }
 
-    // Atualiza status de aluguel para 'LATE' (atrasado)
+    /**
+     * Marca como atrasados ({@link RentalStatus#LATE}) todos os aluguéis ativos
+     * cuja data de início seja superior a 15 dias da data atual.
+     */
     public void markRentalsLate() {
 
-        // Busca todos os aluguéis ativos
         List<Rental> activeRentals = rentalRepository.findByStatus(RentalStatus.ACTIVE);
 
-        // Itera sobre os aluguéis e verifica se já se passaram 15 dias desde a data de início deles
         for (Rental rental : activeRentals) {
             if (rental.getRentalDate().plusDays(15).isBefore(LocalDate.now())) {
-                rental.setStatus(RentalStatus.LATE); // Se sim, define o status do aluguel como 'LATE'
+                rental.setStatus(RentalStatus.LATE);
 
                 rentalRepository.save(rental);
             }
         }
     }
 
-    // Verifica diaramente se há atraso de aluguéis, se sim, atualiza o status deles
-    @Scheduled(cron = "0 0 0 * * *") // Agendado para executar todos os dias à meia noite (00h)        *
+    /**
+     * Tarefa agendada para verificar diariamente (à meia-noite) aluguéis em atraso
+     * e atualizá-los para {@link RentalStatus#LATE} quando aplicável.
+     */
+    @Scheduled(cron = "0 0 0 * * *")
     public void checkForLateRentals() {
 
-        markRentalsLate(); // Atualiza o status do aluguel para 'LATE'
+        markRentalsLate();
     }
 }

@@ -13,8 +13,12 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-// Classe de configuração de segurança da API
-// Define regras de autorização, autenticação, política 'STATELESS'
+/**
+ * Configuração de segurança da API.
+ * <p>
+ * Define regras de autenticação, autorização e política de sessão 'STATELESS'.
+ * </p>
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -25,16 +29,25 @@ public class SecurityConfig {
         this.jwtTokenFilter = jwtTokenFilter;
     }
 
-    // Define a cadeia de filtros de segurança com as regras de autorização/autenticação da API
+    /**
+     * Configura a cadeia de filtros de segurança do Spring Security.
+     * <p>
+     * Define CSRF, gerenciamento de sessão, regras de autorização por endpoint e adiciona o filtro JWT.
+     * </p>
+     *
+     * @param http Configuração HTTP do Spring Security.
+     * @return SecurityFilterChain configurado.
+     * @throws Exception Lança exceção caso ocorra erro na configuração de segurança.
+     */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         return http
 
-                // Desabilita proteção CSRF (já que usamos JWT)
+                // Desabilita proteção CSRF (JWT já garante a segurança)
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // Configura o gerenciamento de sessão para ser 'STATELESS' (sem armazenamento de sessão no servidor)
+                // Define política de sessão sem estado (STATELESS)
                 .sessionManagement(
                         session -> session
                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -44,33 +57,29 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         auth -> auth
 
-                                // Permite acesso livre para cadastro e login (rota pública)
+                                // Endpoints públicos: acesso livre para cadastro e login
                                 .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
 
                                 // Controle de acesso para endpoints relacionados a jogos
-                                // Apenas ADMINs podem criar, atualizar e deletar jogos
                                 .requestMatchers(HttpMethod.POST, "/games/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PATCH, "/games/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/games/**").hasRole("ADMIN")
-                                // USERs podem listar/buscar jogos
                                 .requestMatchers(HttpMethod.GET, "/games/**").hasAnyRole("ADMIN", "USER")
 
                                 // Controle de acesso para endpoints relacionados a usuários
-                                // Apenas ADMINs podem criar, atualizar, deletar e listar usuários
                                 .requestMatchers(HttpMethod.POST, "/users/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PATCH, "/users/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/users/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/users/**").hasRole("ADMIN")
 
                                 // Controle de acesso para endpoints relacionados a aluguéis
-                                // Apenas ADMINs podem criar, atualizar, deletar e listar aluguéis
                                 .requestMatchers(HttpMethod.POST, "/rentals/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PATCH, "/rentals/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/rentals/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/rentals/**").hasRole("ADMIN")
 
-                                // Permite acesso livre aos endpoints do Swagger UI e documentação OpenAPI
+                                // Permite acesso aos endpoints de documentação (Swagger/OpenAPI)
                                 .requestMatchers(
                                         "/swagger-ui/**",
                                         "/v3/api-docs/**"
@@ -79,14 +88,22 @@ public class SecurityConfig {
                                 // Qualquer outra requisição exige autenticação
                                 .anyRequest().authenticated()
                 )
+
+                // Adiciona o filtro JWT antes do filtro padrão de autenticação
                 .addFilterBefore(
-                        jwtTokenFilter, // Filtro de verificação do token JWT
+                        jwtTokenFilter,
                         UsernamePasswordAuthenticationFilter.class
                 )
                 .build();
     }
 
-    // Define o gerenciador de autenticação do Spring Security
+    /**
+     * Define o gerenciador de autenticação do Spring Security.
+     *
+     * @param config Configuração de autenticação.
+     * @return AuthenticationManager configurado.
+     * @throws Exception Lança exceção caso ocorra erro ao obter AuthenticationManager.
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

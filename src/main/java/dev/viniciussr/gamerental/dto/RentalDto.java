@@ -8,8 +8,19 @@ import jakarta.validation.constraints.PastOrPresent;
 
 import java.time.LocalDate;
 
-// DTO usado para cadastrar um novo aluguel e retornar seus dados nas respostas da API
-// Inclui validações para garantia da integridade dos dados fornecidos pelo cliente
+/**
+ * DTO utilizado para cadastrar um novo aluguel e retornar seus dados nas respostas da API.
+ * <p>
+ * Inclui validações para garantir a integridade dos dados fornecidos pelo cliente.
+ * </p>
+ *
+ * @param idRental   identificador único do aluguel.
+ * @param gameId     ID do jogo alugado (não pode ser nulo).
+ * @param userId     ID do usuário que solicitou o aluguel (não pode ser nulo).
+ * @param rentalDate data de início do aluguel (hoje ou no passado).
+ * @param endDate    data prevista para encerramento do aluguel (hoje ou no futuro).
+ * @param status     status atual do aluguel.
+ */
 public record RentalDto(
 
         Long idRental,

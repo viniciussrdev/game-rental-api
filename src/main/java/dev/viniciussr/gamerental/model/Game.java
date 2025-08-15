@@ -10,7 +10,9 @@ import lombok.Setter;
 
 import java.util.Set;
 
-// Entidade que representa um jogo disponível na loja
+/**
+ * Entidade que representa um jogo disponível na loja.
+ */
 @Entity
 @Table(name = "tb_game")
 @Getter
@@ -19,27 +21,42 @@ import java.util.Set;
 @NoArgsConstructor
 public class Game {
 
+    /** Identificador único do jogo. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_game")
-    private Long idGame; // Identificador único do jogo
+    private Long idGame;
 
-    private String title; // Título do jogo
+    /** Título do jogo. */
+    private String title;
 
+    /** Gênero do jogo. */
     @Enumerated(EnumType.STRING)
-    private GameGenres genre; // Gênero do jogo
+    private GameGenres genre;
 
+    /** Plataformas em que o jogo está disponível na loja. */
     @ElementCollection(targetClass = Platforms.class)
     @CollectionTable(
             name = "tb_game_platform",
             joinColumns = @JoinColumn(name = "game_id"))
     @Enumerated(EnumType.STRING)
-    private Set<Platforms> platform; // Plataformas onde o jogo está disponível na loja
+    private Set<Platforms> platform;
 
-    private Integer quantity; // Quantidade de cópias do jogo disponíveis na loja
+    /** Quantidade de cópias do jogo disponíveis na loja. */
+    private Integer quantity;
 
-    private boolean available; // Status de disponibilidade do jogo (true or false)
+    /** Status de disponibilidade do jogo (true or false). */
+    private boolean available;
 
+    /**
+     * Construtor para criação de um novo jogo.
+     *
+     * @param title     título do jogo.
+     * @param genre     gênero do jogo.
+     * @param platform  plataformas onde o jogo está disponível.
+     * @param quantity  quantidade de cópias disponíveis.
+     * @param available status de disponibilidade do jogo.
+     */
     public Game(
             String title,
             GameGenres genre,
