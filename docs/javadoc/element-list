@@ -1,0 +1,14 @@
+dev.viniciussr.gamerental
+dev.viniciussr.gamerental.controller
+dev.viniciussr.gamerental.dto
+dev.viniciussr.gamerental.enums
+dev.viniciussr.gamerental.exception
+dev.viniciussr.gamerental.exception.game
+dev.viniciussr.gamerental.exception.jwt
+dev.viniciussr.gamerental.exception.rental
+dev.viniciussr.gamerental.exception.user
+dev.viniciussr.gamerental.model
+dev.viniciussr.gamerental.repository
+dev.viniciussr.gamerental.security
+dev.viniciussr.gamerental.security.jwt
+dev.viniciussr.gamerental.service
